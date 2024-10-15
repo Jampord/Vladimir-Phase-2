@@ -123,7 +123,14 @@ const schema = yup.object().shape({
   unit_id: yup.object().required().label("Unit").typeError("Unit is a required field"),
   subunit_id: yup.object().required().label("Subunit").typeError("Subunit is a required field"),
   location_id: yup.object().required().label("Location").typeError("Location is a required field"),
-  small_tool_id: yup.object().required().label("Small Tools").typeError("Small Tools is a required field"),
+  // small_tool_id: yup.object().required().label("Small Tools").typeError("Small Tools is a required field"),
+  small_tool_id: yup
+    .object()
+    .nullable()
+    .when("type_of_request", {
+      is: (value) => value === "Small Tools",
+      then: (yup) => yup.label("Small Tools").required().typeError("Small Tools is a required field"),
+    }),
   // account_title_id: yup.object().required().label("Account Title").typeError("Account Title is a required field"),
   accountability: yup.string().typeError("Accountability is a required field").required().label("Accountability"),
   accountable: yup
@@ -210,6 +217,7 @@ const AddRequisition = (props) => {
   const [transactionStatusId, setTransactionStatusId] = useState(null);
 
   const { state: transactionData } = useLocation();
+  // console.log("trans data", transactionData);
   const dialog = useSelector((state) => state.booleanState.dialog);
 
   const isFullWidth = useMediaQuery("(max-width: 600px)");
@@ -510,6 +518,8 @@ const AddRequisition = (props) => {
     isRequisitionRefetch();
   }, [transactionData]);
 
+  // console.log("update request", updateRequest);
+
   useEffect(() => {
     if (updateRequest.id) {
       const accountable = {
@@ -519,6 +529,7 @@ const AddRequisition = (props) => {
         },
       };
       const dateNeededFormat = updateRequest?.date_needed === "-" ? null : new Date(updateRequest?.date_needed);
+      const smallToolFormat = updateRequest?.small_tool_id === undefined ? null : updateRequest?.small_tools_id;
       const cellphoneNumber = updateRequest?.cellphone_number === "-" ? "" : updateRequest?.cellphone_number.slice(2);
       const attachmentFormat = (fields) => (updateRequest?.[fields] === "-" ? "" : updateRequest?.[fields]);
       setValue("type_of_request_id", updateRequest?.type_of_request);
@@ -535,7 +546,8 @@ const AddRequisition = (props) => {
       setValue("unit_id", updateRequest?.unit);
       setValue("subunit_id", updateRequest?.subunit);
       setValue("location_id", updateRequest?.location);
-      setValue("small_tool_id", updateRequest?.small_tools);
+      setValue("small_tool_id", smallToolFormat);
+      // setValue("small_tool_id", updateRequest?.small_tool_id);
       // setValue("account_title_id", updateRequest?.account_title);
       setValue("accountability", updateRequest?.accountability);
       setValue("accountable", accountable);
@@ -596,6 +608,7 @@ const AddRequisition = (props) => {
       updateRequest ? formData?.[fields]?.id : formData?.[fields]?.[name]?.id.toString();
     const accountableFormat =
       formData?.accountable === null ? "" : formData?.accountable?.general_info?.full_id_number_full_name?.toString();
+    const smallToolFormat = formData?.small_tool_id === null ? "" : formData?.small_tool_id?.id?.toString();
     const dateNeededFormat = moment(new Date(formData.date_needed)).format("YYYY-MM-DD");
     const cpFormat = formData?.cellphone_number === "" ? "" : "09" + formData?.cellphone_number?.toString();
 
@@ -616,7 +629,7 @@ const AddRequisition = (props) => {
       subunit_id: formData.subunit_id.id?.toString(),
       location_id: formData?.location_id.id?.toString(),
       // account_title_id: formData?.account_title_id.id?.toString(),
-      small_tool_id: formData?.small_tool_id.id?.toString(),
+      small_tool_id: smallToolFormat,
       accountability: formData?.accountability?.toString(),
       accountable: accountableFormat,
 
@@ -731,6 +744,7 @@ const AddRequisition = (props) => {
                 small_tool_id: formData?.small_tool_id,
                 acquisition_details: formData?.acquisition_details,
 
+                // small_tool_id: null,
                 item_status: null,
                 asset_description: "",
                 asset_specification: "",
@@ -1135,6 +1149,7 @@ const AddRequisition = (props) => {
       unit,
       subunit,
       location,
+      small_tool_id,
       // account_title,
       accountability,
       accountable,
@@ -1168,6 +1183,7 @@ const AddRequisition = (props) => {
       unit,
       subunit,
       location,
+      small_tool_id,
       // account_title,
       accountability,
       accountable,
@@ -1264,6 +1280,9 @@ const AddRequisition = (props) => {
                 )}
                 onChange={(_, value) => {
                   setValue("cip_number", "");
+                  setValue("small_tool_id", null);
+                  setValue("asset_description", "");
+                  setValue("asset_specification", "");
                   return value;
                 }}
               />
@@ -1696,7 +1715,7 @@ const AddRequisition = (props) => {
                 helperText={errors?.asset_description?.message}
                 fullWidth
               />
-              {console.log(errors)}
+
               <CustomTextField
                 control={control}
                 name="asset_specification"
