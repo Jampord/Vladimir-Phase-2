@@ -11,14 +11,15 @@ const CustomTextField = (props) => {
     optional,
     errors,
     validateText,
+    allowSpecialCharacters = false,
 
     ...textfield
   } = props;
 
   const validateInput = (value) => {
-    const regex = /^[a-zA-Z0-9-\s+&,.\d]*$/g;
-    // const regex = /^[a-zA-Z0-9-\s+&,]*$/g;
-    return regex.test(value);
+    const regex = allowSpecialCharacters
+      ? /^[\w\s,.&-]*$/g // Allows letters, numbers, spaces, commas, periods, & and -
+      : /^[a-zA-Z0-9-\s+&,.\d]*$/g; // Keeps the original validation
   };
 
   return (
@@ -41,10 +42,11 @@ const CustomTextField = (props) => {
                 const inputValue = e.target.value;
 
                 // Clean the input value
-                const newValue = inputValue
-                  .replace(/[^a-zA-Z0-9\s,.&-]/g, "") // Allow letters, numbers, spaces, commas, periods, & and -
-                  // .replace(/[^a-zA-Z\n\s]/g, "")
-                  .replace(/\s{2,}/g, " "); // Replace multiple spaces with a single space
+                const newValue = allowSpecialCharacters
+                  ? inputValue // If special characters are allowed, no need to clean
+                  : inputValue
+                      .replace(/[^a-zA-Z0-9\s,.&-]/g, "") // Clean input for disallowed characters
+                      .replace(/\s{2,}/g, " "); // Replace multiple spaces with a single space
 
                 if (validateText && !validateInput(newValue)) {
                   console.warn("Invalid input");
