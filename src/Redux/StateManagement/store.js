@@ -68,6 +68,7 @@ import { additionalCostApi } from "../Query/FixedAsset/AdditionalCost";
 import { printOfflineFaApi } from "../Query/FixedAsset/OfflinePrintingFA";
 
 import { ipAddressSetupApi } from "../Query/IpAddressSetup";
+import { tokenSetupApi } from "../Query/tokenSetup";
 import { ipAddressPretestSetupApi } from "../Query/IpAddressSetup";
 
 import { assetStatusApi } from "../Query/Masterlist/Status/AssetStatus";
@@ -156,6 +157,7 @@ export const store = configureStore({
 
     [divisionApi.reducerPath]: divisionApi.reducer,
     [ipAddressSetupApi.reducerPath]: ipAddressSetupApi.reducer,
+    [tokenSetupApi.reducerPath]: tokenSetupApi.reducer,
     [ipAddressPretestSetupApi.reducerPath]: ipAddressPretestSetupApi.reducer,
 
     // User Management
@@ -243,6 +245,7 @@ export const store = configureStore({
       divisionApi.middleware,
       printOfflineFaApi.middleware,
       ipAddressSetupApi.middleware,
+      tokenSetupApi.middleware,
       ipAddressPretestSetupApi.middleware,
 
       // User Management

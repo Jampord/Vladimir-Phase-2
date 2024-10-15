@@ -84,6 +84,7 @@ import AdditionalCost from "./Pages/FixedAssets/Additional Cost/AdditionalCost";
 import Reports from "./Pages/Reports/Reports";
 import PurchaseRequestReport from "./Pages/Reports/Requisition/PurchaseRequestReport";
 import SmallTools from "./Pages/Masterlist/SmallTools";
+import TokenSetup from "./Components/TokenSetup";
 
 const userData = JSON.parse(localStorage.getItem("user"));
 const userRole = userData?.role?.access_permission.split(", ");
@@ -112,6 +113,12 @@ const router = createBrowserRouter([
           {
             path: "/printer-ip-configuration",
             element: <IpSetup />,
+            handle: { permission: "print-fa" },
+          },
+
+          {
+            path: "/token-configuration",
+            element: <TokenSetup />,
             handle: { permission: "print-fa" },
           },
 

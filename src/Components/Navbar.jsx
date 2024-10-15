@@ -21,6 +21,7 @@ import {
   Padding,
   Password,
   Router,
+  Token,
 } from "@mui/icons-material";
 
 import { MenuRounded, Help, Info, Settings, Logout, Menu as MenuIcon } from "@mui/icons-material";
@@ -118,6 +119,15 @@ const Navbar = () => {
     // dispatch(openIpSetupDialog());
     navigate(
       `/printer-ip-configuration`
+      // , { state: data }
+    );
+    handleClose();
+  };
+
+  const onTokenSetupHandler = () => {
+    // dispatch(openIpSetupDialog());
+    navigate(
+      `/token-configuration`
       // , { state: data }
     );
     handleClose();
@@ -257,6 +267,13 @@ const Navbar = () => {
             <Router />
           </ListItemIcon>
           <ListItemText>IP Configuration</ListItemText>
+        </MenuItem>
+
+        <MenuItem onClick={onTokenSetupHandler} dense>
+          <ListItemIcon>
+            <Token />
+          </ListItemIcon>
+          <ListItemText>Token Configuration</ListItemText>
         </MenuItem>
       </Menu>
 
