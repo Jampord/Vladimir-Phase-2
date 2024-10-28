@@ -51,6 +51,7 @@ import { openToast } from "../Redux/StateManagement/toastSlice";
 import MasterlistToolbar from "./Reusable/MasterlistToolbar";
 import { closeDrawer } from "../Redux/StateManagement/booleanStateSlice";
 import EditToken from "../Pages/Masterlist/AddEdit/EditToken";
+import MasterlistSkeleton from "../Pages/Skeleton/MasterlistSkeleton";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -194,11 +195,19 @@ const TokenSetup = () => {
 
   const onSubmitHandler = async (formData) => {
     try {
-      postToken(formData);
+      const res = await postToken(formData).unwrap();
       onUpdateResetHandler();
       reset();
     } catch (error) {
       console.log(error);
+      dispatch(
+        openToast({
+          message: error.data.message,
+          duration: 5000,
+          variant: "error",
+        })
+      );
+      dispatch(closeConfirm());
     }
   };
 
@@ -358,8 +367,8 @@ const TokenSetup = () => {
               <img
                 src={tokenSetupIcon}
                 alt="icon"
-                width={isSmallScreen ? "40px" : "100px"}
-                height={isSmallScreen ? "40px" : "100px"}
+                width={isSmallScreen ? "40px" : "60px"}
+                // height={isSmallScreen ? "40px" : "80px"}
               />
             )}
             <Typography
@@ -388,8 +397,8 @@ const TokenSetup = () => {
               color="secondary"
               size={isSmallScreen ? "small" : null}
               validateText={false}
-              error={!!errors?.ip}
-              helperText={errors?.ip?.message}
+              error={!!errors?.p_name}
+              helperText={errors?.p_name?.message}
               fullWidth
               onInput={null}
               sx={{
@@ -405,8 +414,8 @@ const TokenSetup = () => {
               label="Endpoint"
               color="secondary"
               size={isSmallScreen ? "small" : null}
-              error={!!errors?.name}
-              helperText={errors?.name?.message}
+              error={!!errors?.endpoint}
+              helperText={errors?.endpoint?.message}
               allowSpecialCharacters={true}
               fullWidth
             />
@@ -417,8 +426,8 @@ const TokenSetup = () => {
               label="Token"
               color="secondary"
               size={isSmallScreen ? "small" : null}
-              error={!!errors?.name}
-              helperText={errors?.name?.message}
+              error={!!errors?.token}
+              helperText={errors?.token?.message}
               allowSpecialCharacters={true}
               fullWidth
             />
@@ -452,6 +461,7 @@ const TokenSetup = () => {
             // flex: 1,
           }}
         >
+          {tokenLoading && <MasterlistSkeleton onExport={false} />}
           {tokenData && !tokenError && (
             <Box className="mcontainer__wrapper">
               <MasterlistToolbar path="#" onStatusChange={setStatus} onSearchChange={setSearch} onSetPage={setPage} />
@@ -548,15 +558,12 @@ const TokenSetup = () => {
                               </TableCell>
 
                               <TableCell className="tbl-cell">
-                                <Typography fontWeight={600} color="secondary.main">
-                                  {data.endpoint}
-                                </Typography>
+                                <Typography color="secondary.main">{data.endpoint}</Typography>
                               </TableCell>
 
                               <TableCell className="tbl-cell">
                                 <Tooltip title={data.token} arrow>
                                   <Typography
-                                    fontWeight={600}
                                     color="secondary.main"
                                     sx={{
                                       overflow: "hidden",
