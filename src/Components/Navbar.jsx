@@ -153,6 +153,8 @@ const Navbar = () => {
     }
   };
 
+  // console.log("permission", permissions);
+
   return (
     <>
       <Box>
@@ -182,13 +184,15 @@ const Navbar = () => {
             </Tooltip>
 
             {/* Settings --------------------------------------------- */}
-            <Tooltip title="Settings" TransitionComponent={Zoom} arrow>
-              <Box className="navbar__iconBtn">
-                <IconButton color="secondary" variant="contained" onClick={handleOpenSettings}>
-                  <Settings />
-                </IconButton>
-              </Box>
-            </Tooltip>
+            {permissions.includes("setup-settings") && (
+              <Tooltip title="Settings" TransitionComponent={Zoom} arrow>
+                <Box className="navbar__iconBtn">
+                  <IconButton color="secondary" variant="contained" onClick={handleOpenSettings}>
+                    <Settings />
+                  </IconButton>
+                </Box>
+              </Tooltip>
+            )}
 
             {/* Account --------------------------------------------- */}
             {/* <Tooltip title="Account" TransitionComponent={Zoom} arrow> */}
@@ -262,19 +266,23 @@ const Navbar = () => {
 
         <Divider sx={{ mx: 2, my: 0.5 }} />
 
-        <MenuItem onClick={onIpSetupHandler} dense>
-          <ListItemIcon>
-            <Router />
-          </ListItemIcon>
-          <ListItemText>IP Configuration</ListItemText>
-        </MenuItem>
+        {permissions.includes("ip-setup") && (
+          <MenuItem onClick={onIpSetupHandler} dense>
+            <ListItemIcon>
+              <Router />
+            </ListItemIcon>
+            <ListItemText>IP Configuration</ListItemText>
+          </MenuItem>
+        )}
 
-        <MenuItem onClick={onTokenSetupHandler} dense>
-          <ListItemIcon>
-            <Token />
-          </ListItemIcon>
-          <ListItemText>Token Configuration</ListItemText>
-        </MenuItem>
+        {permissions.includes("token-setup") && (
+          <MenuItem onClick={onTokenSetupHandler} dense>
+            <ListItemIcon>
+              <Token />
+            </ListItemIcon>
+            <ListItemText>Token Configuration</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
 
       {/* Account --------------------------------------------- */}

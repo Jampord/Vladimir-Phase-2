@@ -37,6 +37,7 @@ const schema = yup.object().shape({
 
 const AddRole = (props) => {
   const { data, onUpdateResetHandler } = props;
+  console.log(data);
 
   const [masterlistChecked, setMasterlistChecked] = useState(false);
 
@@ -142,6 +143,7 @@ const AddRole = (props) => {
     "on-hand",
     "disposal",
     "reports",
+    "setup-settings",
 
     // Masterlist
     "company",
@@ -198,6 +200,10 @@ const AddRole = (props) => {
     // Reports
     "reports",
     "pr-report",
+
+    // Setup settings
+    "ip-setup",
+    "token-setup",
   ];
 
   const masterlistValue = [
@@ -220,6 +226,7 @@ const AddRole = (props) => {
   const assetMovement = ["transfer", "evaluation", "pull-out", "disposal"];
   const approving = ["approving-request", "approving-transfer", "approving-pull-out", "approving-disposal"];
   const reports = ["pr-report"];
+  const setupSettings = ["ip-setup", "token-setup"];
 
   const onSubmitHandler = (formData) => {
     if (data.status) {
@@ -309,7 +316,7 @@ const AddRole = (props) => {
       { label: "Printing of Tag", value: "print-fa" },
       { label: "Settings", value: "settings" },
       { label: "Request Monitoring", value: "request-monitoring" },
-      { label: "sample", value: "sample" },
+      // { label: "sample", value: "sample" },
     ];
 
     const Setup = [
@@ -320,6 +327,7 @@ const AddRole = (props) => {
       { label: "Asset List", value: "asset-list" },
       { label: "On Hand", value: "on-hand" },
       { label: "Reports", value: "reports" },
+      { label: "Setup Settings", value: "setup-settings" },
     ];
 
     return (
@@ -544,6 +552,40 @@ const AddRole = (props) => {
               <Checkbox
                 {...register("access_permission")}
                 checked={watch("access_permission")?.includes("pr-report")}
+              />
+            }
+          />
+        </FormGroup>
+      </Stack>
+    );
+  };
+
+  const SetupSettings = () => {
+    return (
+      <Stack flexDirection="row" flexWrap="wrap" justifyContent="space-evenly" gap={1}>
+        <FormGroup
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            ml: 3,
+          }}
+        >
+          <FormControlLabel
+            disabled={data.action === "view"}
+            label="IP Setup"
+            value="ip-setup"
+            control={
+              <Checkbox {...register("access_permission")} checked={watch("access_permission")?.includes("ip-setup")} />
+            }
+          />
+          <FormControlLabel
+            disabled={data.action === "view"}
+            label="Token Setup"
+            value="token-setup"
+            control={
+              <Checkbox
+                {...register("access_permission")}
+                checked={watch("access_permission")?.includes("token-setup")}
               />
             }
           />
@@ -1015,6 +1057,58 @@ const AddRole = (props) => {
                       />
                     </FormLabel>
                     <Reports />
+                  </FormControl>
+                </Box>
+              )}
+
+              {watch("access_permission").includes("setup-settings") && (
+                <Box>
+                  <Divider sx={{ mx: "30px" }} />
+                  <FormControl
+                    fullWidth
+                    component="fieldset"
+                    sx={{
+                      border: "1px solid #a6a6a6af ",
+                      borderRadius: "10px",
+                      px: "10px",
+                      mt: "10px",
+                      mb: "15px",
+                    }}
+                  >
+                    <FormLabel component="legend" sx={{ ml: "1px", pl: "5px" }}>
+                      <FormControlLabel
+                        label="Setup Settings"
+                        value="setup-settings"
+                        sx={{ color: "text.main", fontWeight: "bold" }}
+                        disabled={data.action === "view"}
+                        control={
+                          <Checkbox
+                            checked={watch("access_permission").includes("setup-settings")}
+                            // checked={masterlistValue.every((perm) =>
+                            //   watch("access_permission").includes(perm)
+                            // )}
+                            indeterminate={
+                              reports.some((perm) => watch("access_permission").includes(perm)) &&
+                              !reports.every((perm) => watch("access_permission").includes(perm))
+                            }
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setValue("access_permission", [
+                                  ...new Set([...watch("access_permission"), "ip-setup", "token-setup"]),
+                                ]);
+                              } else {
+                                const reportsEmptyValue = watch("access_permission").filter(
+                                  (perm) => ![...reports, "reports"].includes(perm)
+                                );
+
+                                setValue("access_permission", reportsEmptyValue);
+                              }
+                            }}
+                          />
+                        }
+                      />
+                    </FormLabel>
+                    <SetupSettings />
                   </FormControl>
                 </Box>
               )}

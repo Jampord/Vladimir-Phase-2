@@ -113,13 +113,13 @@ const router = createBrowserRouter([
           {
             path: "/printer-ip-configuration",
             element: <IpSetup />,
-            handle: { permission: "print-fa" },
+            handle: { permission: "ip-setup" },
           },
 
           {
             path: "/token-configuration",
             element: <TokenSetup />,
-            handle: { permission: "print-fa" },
+            handle: { permission: "token-setup" },
           },
 
           {
