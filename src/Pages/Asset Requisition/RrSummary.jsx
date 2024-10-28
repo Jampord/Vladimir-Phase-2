@@ -162,7 +162,7 @@ const RrSummary = (props) => {
             dispatch(onLoading());
             let vladimirCancel = await cancelVladimirRr({
               rr_number: data,
-              remarks: remarks,
+              reason: remarks,
             }).unwrap();
             // console.log(vladimirCancel);
 
@@ -170,7 +170,7 @@ const RrSummary = (props) => {
               rr_number: data,
               v_name: `${userData?.firstname} ${userData?.lastname}`,
               rdf_id: userData?.employee_id,
-              remarks: remarks,
+              reason: remarks,
             }).unwrap();
             // console.log(ymirCancel);
 
