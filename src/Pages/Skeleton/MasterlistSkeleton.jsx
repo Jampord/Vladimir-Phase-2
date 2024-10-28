@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Skeleton } from "@mui/material";
 
 const MasterlistSkeleton = (props) => {
-  const { onImport, onAdd, onPrint, onSync, category } = props;
+  const { onImport, onAdd, onPrint, onSync, category, onExport } = props;
   // console.log(category);
 
   return (
@@ -89,10 +89,10 @@ const MasterlistSkeleton = (props) => {
           <Box
             sx={{
               display: "flex",
-              justifyContent: "space-between",
+              justifyContent: onExport ? "space-between" : "end",
             }}
           >
-            <Skeleton variant={"rounded"} width="100px" height="35px" />
+            {onExport && <Skeleton variant={"rounded"} width="100px" height="35px" />}
 
             <Skeleton variant={"rounded"} width="300px" height="35px" />
           </Box>
