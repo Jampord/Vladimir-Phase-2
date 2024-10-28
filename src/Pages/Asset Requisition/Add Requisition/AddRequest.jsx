@@ -185,10 +185,10 @@ const AddRequisition = (props) => {
     unit_id: null,
     subunit_id: null,
     location_id: null,
-    small_tool_id: null,
     // account_title_id: null,
 
     item_status: null,
+    small_tool_id: null,
     asset_description: "",
     asset_specification: "",
     date_needed: null,
@@ -441,6 +441,8 @@ const AddRequisition = (props) => {
     { refetchOnMountOrArgChange: true }
   );
 
+  // console.log("transactiondata", transactionDataApi);
+
   const [postRequest, { data: postRequestData }] = usePostRequestContainerApiMutation();
   const [updateDataRequest, { data: updateRequestData }] = useUpdateRequestContainerApiMutation();
   const [deleteRequest, { data: deleteRequestData }] = useDeleteRequestContainerApiMutation();
@@ -474,11 +476,11 @@ const AddRequisition = (props) => {
       unit_id: null,
       subunit_id: null,
       location_id: null,
-      small_tool_id: null,
       // account_title_id: null,
       acquisition_details: "",
 
       item_status: null,
+      small_tool_id: null,
       asset_description: "",
       asset_specification: "",
       date_needed: null,
@@ -518,7 +520,7 @@ const AddRequisition = (props) => {
     isRequisitionRefetch();
   }, [transactionData]);
 
-  // console.log("update request", updateRequest);
+  console.log("update request", updateRequest);
 
   useEffect(() => {
     if (updateRequest.id) {
@@ -529,7 +531,8 @@ const AddRequisition = (props) => {
         },
       };
       const dateNeededFormat = updateRequest?.date_needed === "-" ? null : new Date(updateRequest?.date_needed);
-      const smallToolFormat = updateRequest?.small_tool_id === undefined ? null : updateRequest?.small_tools_id;
+      const smallToolFormat = updateRequest?.small_tool_id === undefined ? null : updateRequest?.small_tool_id;
+      console.log("smalltoolformat", updateRequest);
       const cellphoneNumber = updateRequest?.cellphone_number === "-" ? "" : updateRequest?.cellphone_number.slice(2);
       const attachmentFormat = (fields) => (updateRequest?.[fields] === "-" ? "" : updateRequest?.[fields]);
       setValue("type_of_request_id", updateRequest?.type_of_request);
@@ -546,7 +549,6 @@ const AddRequisition = (props) => {
       setValue("unit_id", updateRequest?.unit);
       setValue("subunit_id", updateRequest?.subunit);
       setValue("location_id", updateRequest?.location);
-      setValue("small_tool_id", smallToolFormat);
       // setValue("small_tool_id", updateRequest?.small_tool_id);
       // setValue("account_title_id", updateRequest?.account_title);
       setValue("accountability", updateRequest?.accountability);
@@ -554,6 +556,7 @@ const AddRequisition = (props) => {
       setValue("acquisition_details", updateRequest?.acquisition_details);
 
       // ASSET INFO
+      setValue("small_tool_id", smallToolFormat);
       setValue("asset_description", updateRequest?.asset_description);
       setValue("item_status", updateRequest?.item_status);
       setValue("asset_specification", updateRequest?.asset_specification);
@@ -741,10 +744,10 @@ const AddRequisition = (props) => {
                 subunit_id: formData?.subunit_id,
                 location_id: formData?.location_id,
                 // account_title_id: formData?.account_title_id,
-                small_tool_id: formData?.small_tool_id,
+                // small_tool_id: formData?.small_tool_id,
                 acquisition_details: formData?.acquisition_details,
 
-                // small_tool_id: null,
+                small_tool_id: null,
                 item_status: null,
                 asset_description: "",
                 asset_specification: "",
@@ -1149,7 +1152,7 @@ const AddRequisition = (props) => {
       unit,
       subunit,
       location,
-      small_tool_id,
+      small_tool,
       // account_title,
       accountability,
       accountable,
@@ -1183,7 +1186,7 @@ const AddRequisition = (props) => {
       unit,
       subunit,
       location,
-      small_tool_id,
+      small_tool_id: small_tool,
       // account_title,
       accountability,
       accountable,
