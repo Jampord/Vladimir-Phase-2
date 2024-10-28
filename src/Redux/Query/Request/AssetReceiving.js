@@ -19,7 +19,7 @@ export const assetReceivingApi = createApi({
   endpoints: (builder) => ({
     getAssetReceivingApi: builder.query({
       query: (params) => {
-        const queryParams = [`search=${params.search}`, `per_page=${params.per_page}`, `page=${params.page}`];
+        const queryParams = [`&search=${params.search}`, `per_page=${params.per_page}`, `page=${params.page}`];
 
         if (params.from) queryParams.push(`from=${params.from}`);
         if (params.to) queryParams.push(`to=${params.to}`);
@@ -32,7 +32,7 @@ export const assetReceivingApi = createApi({
 
     getAssetReceivedApi: builder.query({
       query: (params) => {
-        const queryParams = [`search=${params.search}`, `per_page=${params.per_page}`, `page=${params.page}`];
+        const queryParams = [`&search=${params.search}`, `per_page=${params.per_page}`, `page=${params.page}`];
 
         if (params.from) queryParams.push(`from=${params.from}`);
         if (params.to) queryParams.push(`to=${params.to}`);
