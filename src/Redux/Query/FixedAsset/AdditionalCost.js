@@ -71,6 +71,15 @@ export const additionalCostApi = createApi({
       }),
       invalidatesTags: ["FixedAsset"],
     }),
+
+    postAddCostTaggingApi: builder.mutation({
+      query: (data) => ({
+        url: `/addcost-tagging`,
+        method: "POST",
+        body: data,
+      }),
+      // invalidatesTags: ["Elixir"],
+    }),
   }),
 });
 
@@ -82,4 +91,5 @@ export const {
   useUpdateAdditionalCostApiMutation,
   usePostCalcDepreAddCostApiMutation,
   usePostImportApiMutation,
+  usePostAddCostTaggingApiMutation,
 } = additionalCostApi;

@@ -20,7 +20,10 @@ import { useSelector } from "react-redux";
 // MUI
 import {
   Box,
+  Button,
+  Checkbox,
   Dialog,
+  FormControlLabel,
   Grow,
   Stack,
   Table,
@@ -30,17 +33,28 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { Help, ReportProblem } from "@mui/icons-material";
+import { Help, LocalOffer, ReportProblem } from "@mui/icons-material";
 import moment from "moment";
 import { useGetElixirApiQuery } from "../../../Redux/Query/Systems/Elixir";
 import MasterlistSkeleton from "../../Skeleton/MasterlistSkeleton";
 import ErrorFetching from "../../ErrorFetching";
 import NoRecordsFound from "../../../Layout/NoRecordsFound";
 import CustomTablePagination from "../../../Components/Reusable/CustomTablePagination";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import AddTag from "../AddEdit/AddTag";
+import { openDialog, openDrawer } from "../../../Redux/StateManagement/booleanStateSlice";
+
+const schema = yup.object().shape({
+  tag_id: yup.array(),
+});
 
 const Elixir = () => {
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("active");
   const [perPage, setPerPage] = useState(5);
@@ -60,6 +74,7 @@ const Elixir = () => {
     username: "",
     role_id: null,
   });
+  const [tag, setTag] = useState([]);
 
   const { excelExport } = useExcel();
   const dispatch = useDispatch();
@@ -94,6 +109,11 @@ const Elixir = () => {
   // Table Properties --------------------------------
 
   const drawer = useSelector((state) => state.booleanState.drawer);
+  const dialog = useSelector((state) => state.booleanState.drawer);
+
+  const handleCancel = () => {
+    const onClick = setOpen(false);
+  };
 
   const perPageHandler = (e) => {
     setPage(1);
@@ -349,6 +369,45 @@ const Elixir = () => {
     setPage(1);
   };
 
+  const { watch, setValue, control, register, reset } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      tag_id: [],
+    },
+  });
+
+  const tagIdAllHandler = (checked) => {
+    if (checked) {
+      setValue(
+        "tag_id",
+        elixirData.assetTag?.map((item) => item?.id)
+      );
+    } else {
+      reset({ tag_id: [] });
+    }
+  };
+
+  const handleTag = () => {
+    setTag({
+      tag_id: watch("tag_id"),
+    });
+
+    setOpen(!open);
+  };
+
+  // * Validation for Tagging
+  const handleSelectedItems = elixirData?.assetTag?.filter((item) => watch("tag_id").includes(item.id)).length === 0;
+
+  // const tagData = handleSelectedItems?.every((item) => item?.accountability === "Common");
+
+  const validateSelectedItems = () => {
+    if (handleSelectedItems) {
+      return true;
+    }
+    return false;
+  };
+  // * -------------------------------------------------------------------
+
   return (
     <Stack className="category_height">
       {isLoading && <MasterlistSkeleton category={true} onAdd={true} />}
@@ -366,6 +425,17 @@ const Elixir = () => {
           /> */}
           <Box py={1} />
 
+          <Button
+            variant="contained"
+            onClick={() => handleTag()}
+            size="small"
+            startIcon={<LocalOffer />}
+            sx={{ position: "absolute", right: 0, top: -40, marginRight: 9.6 }}
+            disabled={!watch("tag_id") || validateSelectedItems()}
+          >
+            Tag
+          </Button>
+
           <Box>
             <TableContainer className="mcontainer__th-body-category">
               <Table className="mcontainer__table" stickyHeader>
@@ -378,6 +448,27 @@ const Elixir = () => {
                       },
                     }}
                   >
+                    <TableCell className="tbl-cell-category">
+                      <Tooltip title="Select All" placement="top" arrow>
+                        <FormControlLabel
+                          sx={{ margin: "auto", align: "center" }}
+                          control={
+                            <Checkbox
+                              // value=""
+                              size="small"
+                              checked={
+                                !!elixirData?.assetTag
+                                  ?.map((mapItem) => mapItem?.id)
+                                  ?.every((item) => watch("tag_id").includes(item))
+                              }
+                            />
+                          }
+                          onChange={(e) => {
+                            tagIdAllHandler(e.target.checked);
+                          }}
+                        />
+                      </Tooltip>
+                    </TableCell>
                     <TableCell className="tbl-cell-category text-center">
                       <TableSortLabel
                         active={orderBy === `id`}
@@ -387,7 +478,6 @@ const Elixir = () => {
                         ID No.
                       </TableSortLabel>
                     </TableCell>
-
                     <TableCell className="tbl-cell-category">
                       <TableSortLabel
                         active={orderBy === `major_category_name`}
@@ -397,7 +487,6 @@ const Elixir = () => {
                         Asset Tag
                       </TableSortLabel>
                     </TableCell>
-
                     <TableCell className="tbl-cell-category">
                       <TableSortLabel
                         active={orderBy === `est_useful_life`}
@@ -407,7 +496,6 @@ const Elixir = () => {
                         Customer
                       </TableSortLabel>
                     </TableCell>
-
                     <TableCell className="tbl-cell-category">
                       <TableSortLabel
                         active={orderBy === `division_id`}
@@ -417,12 +505,10 @@ const Elixir = () => {
                         Item Description
                       </TableSortLabel>
                     </TableCell>
-
                     <TableCell className="tbl-cell-category">Warehouse</TableCell>
                     <TableCell className="tbl-cell-category">PR/PO</TableCell>
                     <TableCell className="tbl-cell-category text-center">Served</TableCell>
                     <TableCell className="tbl-cell-category text-center">UOM</TableCell>
-
                     <TableCell className="tbl-cell-category">
                       <TableSortLabel
                         active={orderBy === `created_at`}
@@ -432,7 +518,6 @@ const Elixir = () => {
                         Date Created
                       </TableSortLabel>
                     </TableCell>
-
                     {/* <TableCell className="tbl-cell-category  text-center">Action</TableCell> */}
                   </TableRow>
                 </TableHead>
@@ -453,6 +538,25 @@ const Elixir = () => {
                               },
                             }}
                           >
+                            {console.log("data", data)}
+                            {console.log(watch("tag_id"))}
+
+                            <TableCell className="tbl-cell-category">
+                              <FormControlLabel
+                                value={data.id}
+                                name="a"
+                                sx={{ margin: "auto" }}
+                                // disabled={data.action === "view"}
+                                control={
+                                  <Checkbox
+                                    size="small"
+                                    {...register("tag_id")}
+                                    checked={watch("tag_id").includes(data.id)}
+                                  />
+                                }
+                              />
+                            </TableCell>
+
                             <TableCell className="tbl-cell-category tr-cen-pad45">{data.mirId}</TableCell>
 
                             <TableCell className="tbl-cell-category text-weight ">{data.assetTag}</TableCell>
@@ -525,6 +629,10 @@ const Elixir = () => {
 
           <Dialog open={drawer} TransitionComponent={Grow} PaperProps={{ sx: { borderRadius: "10px" } }}>
             {/* <AddMajorCategory data={updateMajorCategory} onUpdateResetHandler={onUpdateResetHandler} /> */}
+          </Dialog>
+
+          <Dialog open={open} TransitionComponent={Grow} PaperProps={{ sx: { borderRadius: "10px" } }}>
+            <AddTag data={elixirData?.assetTag} tag={tag} handleCancel={handleCancel} />
           </Dialog>
         </Box>
       )}
