@@ -85,6 +85,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const userLogout = useNavigate();
   const location = useLocation();
+  // console.log("location", location);
 
   const permissions = useSelector((state) => state.userLogin?.user.role.access_permission);
 
@@ -154,6 +155,7 @@ const Navbar = () => {
   };
 
   // console.log("permission", permissions);
+  // console.log("pathnames", pathnames);
 
   return (
     <>
@@ -211,7 +213,6 @@ const Navbar = () => {
             {/* </Tooltip> */}
           </Box>
         </Box>
-
         {!isSmallScreen && (
           <Breadcrumbs classaria-label="breadcrumb" sx={{ ml: 3, userSelect: "none" }}>
             {permissions.split(", ").includes("dashboard") && (
@@ -222,7 +223,7 @@ const Navbar = () => {
             {pathnames?.map((value, index) => {
               const last = index === pathnames.length - 1;
               const to = `/${pathnames.slice(0, index + 1).join("/")}`;
-              const breadcrumbName = value.replace(/-/g, " ");
+              const breadcrumbName = value.replace(/-|%/g, " ");
 
               return last ? (
                 <Typography color="secondary" sx={{ fontWeight: "bold" }} key={to} textTransform="capitalize">
@@ -236,7 +237,7 @@ const Navbar = () => {
                 </LinkRouter>
               );
             })}
-            dispatch(closeIpSetupDialog());
+            {/* dispatch(closeIpSetupDialog()); */}
           </Breadcrumbs>
         )}
       </Box>
