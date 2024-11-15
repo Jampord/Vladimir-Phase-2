@@ -116,6 +116,11 @@ export const requisitionApi = createApi({
 
       invalidatesTags: ["Requisition"],
     }),
+
+    getRequestExportApi: builder.query({
+      query: (params) => `/export-aging?from=${params?.from}&to=${params?.to}&data_all=${params?.export}`,
+      providesTags: ["Requisition"],
+    }),
   }),
 });
 
@@ -136,4 +141,5 @@ export const {
   useUpdateRequisitionApiMutation,
   useVoidRequisitionApiMutation,
   useDeleteRequisitionReferenceApiMutation,
+  useLazyGetRequestExportApiQuery,
 } = requisitionApi;
