@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Moment from "moment";
 import MasterlistToolbar from "../../Components/Reusable/MasterlistToolbar";
 import ActionMenu from "../../Components/Reusable/ActionMenu";
@@ -8,7 +8,8 @@ import { useDispatch } from "react-redux";
 import { openToast } from "../../Redux/StateManagement/toastSlice";
 import { openConfirm, closeConfirm, onLoading } from "../../Redux/StateManagement/confirmSlice";
 
-import { usePostWarehouseStatusApiMutation, useGetWarehouseApiQuery } from "../../Redux/Query/Masterlist/Warehouse";
+import { useLazyGetYmirWarehouseAllApiQuery } from "../../Redux/Query/Masterlist/YmirCoa/YmirApi";
+import { useGetWarehouseApiQuery, usePostWarehouseApiMutation } from "../../Redux/Query/Masterlist/Warehouse";
 
 import { useSelector } from "react-redux";
 
@@ -41,12 +42,6 @@ const Warehouse = () => {
   const [status, setStatus] = useState("active");
   const [perPage, setPerPage] = useState(5);
   const [page, setPage] = useState(1);
-  const [updateWarehouse, setUpdateWarehouse] = useState({
-    status: false,
-    id: null,
-    sync_id: null,
-    warehouse_name: "",
-  });
 
   const drawer = useSelector((state) => state.booleanState.drawer);
   const dispatch = useDispatch();
@@ -90,13 +85,26 @@ const Warehouse = () => {
     setPage(page + 1);
   };
 
+  const [
+    trigger,
+    {
+      data: ymirWarehouseApi,
+      isLoading: ymirWarehouseApiLoading,
+      isSuccess: ymirWarehouseApiSuccess,
+      isFetching: ymirWarehouseApiFetching,
+      isError: ymirWarehouseApiError,
+
+      refetch: ymirWarehouseApiRefetch,
+    },
+  ] = useLazyGetYmirWarehouseAllApiQuery();
+
   const {
     data: warehouseData,
     isLoading: warehouseLoading,
     isSuccess: warehouseSuccess,
     isError: warehouseError,
     error: errorData,
-    refetch,
+    refetch: warehouseApiRefetch,
   } = useGetWarehouseApiQuery(
     {
       page: page,
@@ -107,15 +115,51 @@ const Warehouse = () => {
     { refetchOnMountOrArgChange: true }
   );
 
-  const [postWarehouseStatusApi, { isLoading }] = usePostWarehouseStatusApiMutation();
+  const [
+    postWarehouse,
+    { data: postData, isLoading: isPostLoading, isSuccess: isPostSuccess, isError: isPostError, error: postError },
+  ] = usePostWarehouseApiMutation();
 
-  // console.log(warehouseData);
+  useEffect(() => {
+    if (ymirWarehouseApiSuccess) {
+      postWarehouse(ymirWarehouseApi);
+    }
+  }, [ymirWarehouseApiSuccess, ymirWarehouseApiFetching]);
 
-  const onArchiveRestoreHandler = async (id) => {
+  useEffect(() => {
+    if (isPostError) {
+      let message = "Something went wrong. Please try again.";
+      let variant = "error";
+
+      if (postError?.status === 404 || postError?.status === 422) {
+        message = postError?.data?.errors.detail || postError?.data?.message;
+        if (postError?.status === 422) {
+          console.log(postError);
+          dispatch(closeConfirm());
+        }
+      }
+
+      dispatch(openToast({ message, duration: 5000, variant }));
+    }
+  }, [isPostError]);
+
+  useEffect(() => {
+    if (isPostSuccess && !isPostLoading) {
+      dispatch(
+        openToast({
+          message: postData?.message,
+          duration: 5000,
+        })
+      );
+      dispatch(closeConfirm());
+    }
+  }, [isPostSuccess, isPostLoading]);
+
+  const onSyncHandler = async () => {
     dispatch(
       openConfirm({
-        icon: status === "active" ? ReportProblem : Help,
-        iconColor: status === "active" ? "alert" : "info",
+        icon: Help,
+        iconColor: "info",
         message: (
           <Box>
             <Typography> Are you sure you want to</Typography>
@@ -124,91 +168,41 @@ const Warehouse = () => {
                 display: "inline-block",
                 color: "secondary.main",
                 fontWeight: "bold",
-                fontFamily: "Raleway",
               }}
             >
-              {status === "active" ? "ARCHIVE" : "ACTIVATE"}
+              SYNC
             </Typography>{" "}
-            this data?
+            the data?
           </Box>
         ),
+        autoClose: true,
 
         onConfirm: async () => {
           try {
             dispatch(onLoading());
-            const result = await postWarehouseStatusApi({
-              id: id,
-              status: status === "active" ? false : true,
-            }).unwrap();
-
+            await trigger();
+            warehouseApiRefetch();
+          } catch (err) {
+            console.log(err.message);
             dispatch(
               openToast({
-                message: result.message,
+                message: postData?.message,
                 duration: 5000,
               })
             );
             dispatch(closeConfirm());
-          } catch (err) {
-            if (err?.status === 422) {
-              dispatch(
-                openToast({
-                  message: err.data.errors?.detail,
-                  duration: 5000,
-                  variant: "error",
-                })
-              );
-            } else if (err?.status !== 422) {
-              dispatch(
-                openToast({
-                  message: "Something went wrong. Please try again.",
-                  duration: 5000,
-                  variant: "error",
-                })
-              );
-            }
           }
         },
       })
     );
   };
 
-  const onUpdateHandler = (props) => {
-    const { id, warehouse_name, sync_id, location } = props;
-    setUpdateWarehouse({
-      status: true,
-      id: id,
-      sync_id: sync_id,
-      location: location,
-      warehouse_name: warehouse_name,
-    });
-  };
-
-  const onUpdateResetHandler = () => {
-    setUpdateWarehouse({
-      status: false,
-      id: null,
-      sync_id: [],
-      location_id: [],
-      warehouse_name: "",
-    });
-  };
-
   const onSetPage = () => {
     setPage(1);
   };
 
-  const onViewDepartmentHandler = (props) => {
-    const { id, warehouse_name, sync_id } = props;
-    setUpdateWarehouse({
-      status: true,
-      action: "view",
-      id: id,
-      sync_id: sync_id,
-      warehouse_name: warehouse_name,
-    });
-  };
-
   // console.log(warehouseData);
+  console.log("wdata", warehouseData);
 
   return (
     <Box className="mcontainer">
@@ -216,7 +210,7 @@ const Warehouse = () => {
         Warehouse
       </Typography>
 
-      {warehouseLoading && <MasterlistSkeleton onAdd={true} />}
+      {warehouseLoading && <MasterlistSkeleton onSync={true} />}
       {warehouseError && <ErrorFetching refetch={refetch} error={errorData} />}
       {warehouseData && !warehouseError && (
         <Box className="mcontainer__wrapper">
@@ -225,7 +219,8 @@ const Warehouse = () => {
             onStatusChange={setStatus}
             onSearchChange={setSearch}
             onSetPage={setPage}
-            onAdd={() => {}}
+            onSyncHandler={onSyncHandler}
+            onSync={() => {}}
           />
 
           <Box>
@@ -260,7 +255,7 @@ const Warehouse = () => {
                       </TableSortLabel>
                     </TableCell>
 
-                    <TableCell className="tbl-cell">Location</TableCell>
+                    <TableCell className="tbl-cell">Code</TableCell>
 
                     <TableCell className="tbl-cell text-center">Status</TableCell>
 
@@ -270,11 +265,9 @@ const Warehouse = () => {
                         direction={orderBy === `created_at` ? order : `asc`}
                         onClick={() => onSort(`created_at`)}
                       >
-                        Date Created
+                        Date Updated
                       </TableSortLabel>
                     </TableCell>
-
-                    <TableCell className="tbl-cell">Action</TableCell>
                   </TableRow>
                 </TableHead>
 
@@ -294,10 +287,10 @@ const Warehouse = () => {
                               },
                             }}
                           >
-                            <TableCell className="tbl-cell tr-cen-pad45">{data.id}</TableCell>
+                            <TableCell className="tbl-cell tr-cen-pad45  tbl-coa">{data.id}</TableCell>
 
                             <TableCell className="tbl-cell text-weight">{data.warehouse_name}</TableCell>
-                            <TableCell className="tbl-cell">{`${data.location?.location_code} - ${data.location?.location_name}`}</TableCell>
+                            <TableCell className="tbl-cell">{data.warehouse_code}</TableCell>
 
                             <TableCell className="tbl-cell text-center">
                               {data.is_active ? (
@@ -330,15 +323,6 @@ const Warehouse = () => {
                             <TableCell className="tbl-cell tr-cen-pad45">
                               {Moment(data.created_at).format("MMM DD, YYYY")}
                             </TableCell>
-
-                            <TableCell className="tbl-cell ">
-                              <ActionMenu
-                                status={status}
-                                data={data}
-                                onUpdateHandler={onUpdateHandler}
-                                onArchiveRestoreHandler={onArchiveRestoreHandler}
-                              />
-                            </TableCell>
                           </TableRow>
                         ))}
                     </>
@@ -358,12 +342,136 @@ const Warehouse = () => {
           />
         </Box>
       )}
-
-      <Dialog open={drawer} TransitionComponent={Grow} PaperProps={{ sx: { borderRadius: "10px" } }}>
-        <AddWarehouse data={updateWarehouse} refetch={refetch} onUpdateResetHandler={onUpdateResetHandler} />
-      </Dialog>
     </Box>
   );
 };
 
 export default Warehouse;
+
+// ******************************* PREVIOUS WAREHOUSE *******************************
+// const [updateWarehouse, setUpdateWarehouse] = useState({
+//   status: false,
+//   id: null,
+//   sync_id: null,
+//   warehouse_name: "",
+// });
+
+// const [postWarehouseStatusApi, { isLoading }] = usePostWarehouseStatusApiMutation();
+
+// console.log(warehouseData);
+
+// const onArchiveRestoreHandler = async (id) => {
+//   dispatch(
+//     openConfirm({
+//       icon: status === "active" ? ReportProblem : Help,
+//       iconColor: status === "active" ? "alert" : "info",
+//       message: (
+//         <Box>
+//           <Typography> Are you sure you want to</Typography>
+//           <Typography
+//             sx={{
+//               display: "inline-block",
+//               color: "secondary.main",
+//               fontWeight: "bold",
+//               fontFamily: "Raleway",
+//             }}
+//           >
+//             {status === "active" ? "ARCHIVE" : "ACTIVATE"}
+//           </Typography>{" "}
+//           this data?
+//         </Box>
+//       ),
+
+//       onConfirm: async () => {
+//         try {
+//           dispatch(onLoading());
+//           const result = await postWarehouseStatusApi({
+//             id: id,
+//             status: status === "active" ? false : true,
+//           }).unwrap();
+
+//           dispatch(
+//             openToast({
+//               message: result.message,
+//               duration: 5000,
+//             })
+//           );
+//           dispatch(closeConfirm());
+//         } catch (err) {
+//           if (err?.status === 422) {
+//             dispatch(
+//               openToast({
+//                 message: err.data.errors?.detail,
+//                 duration: 5000,
+//                 variant: "error",
+//               })
+//             );
+//           } else if (err?.status !== 422) {
+//             dispatch(
+//               openToast({
+//                 message: "Something went wrong. Please try again.",
+//                 duration: 5000,
+//                 variant: "error",
+//               })
+//             );
+//           }
+//         }
+//       },
+//     })
+//   );
+// };
+
+// const onUpdateHandler = (props) => {
+//   const { id, warehouse_name, sync_id, location } = props;
+//   setUpdateWarehouse({
+//     status: true,
+//     id: id,
+//     sync_id: sync_id,
+//     location: location,
+//     warehouse_name: warehouse_name,
+//   });
+// };
+
+// const onUpdateResetHandler = () => {
+//   setUpdateWarehouse({
+//     status: false,
+//     id: null,
+//     sync_id: [],
+//     location_id: [],
+//     warehouse_name: "",
+//   });
+// };
+
+// const onViewDepartmentHandler = (props) => {
+//   const { id, warehouse_name, sync_id } = props;
+//   setUpdateWarehouse({
+//     status: true,
+//     action: "view",
+//     id: id,
+//     sync_id: sync_id,
+//     warehouse_name: warehouse_name,
+//   });
+// };
+
+//****************RETURN************************ */
+
+{
+  /* <TableCell className="tbl-cell">Action</TableCell> */
+}
+
+{
+  /* <TableCell className="tbl-cell ">
+                              <ActionMenu
+                                status={status}
+                                data={data}
+                                onUpdateHandler={onUpdateHandler}
+                                onArchiveRestoreHandler={onArchiveRestoreHandler}
+                              />
+                            </TableCell> */
+}
+
+{
+  /* <Dialog open={drawer} TransitionComponent={Grow} PaperProps={{ sx: { borderRadius: "10px" } }}>
+        <AddWarehouse data={updateWarehouse} refetch={refetch} onUpdateResetHandler={onUpdateResetHandler} />
+      </Dialog> */
+}

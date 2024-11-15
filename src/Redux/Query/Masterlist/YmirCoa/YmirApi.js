@@ -65,6 +65,10 @@ export const ymirApi = createApi({
       query: () => `/asset_vladimir`,
     }),
 
+    getYmirWarehouseAllApi: builder.query({
+      query: () => `/warehouses?pagination=none&per_page=5&page=1&status=active`,
+    }),
+
     postPrYmirApi: builder.mutation({
       query: (data) => ({
         // url: "http://10.10.13.6:8080/api/asset_sync",
@@ -110,4 +114,6 @@ export const {
   useLazyGetYmirSmallToolsAllApiQuery,
   useLazyGetYmirItemsAllApiQuery,
   usePatchPrYmirApiMutation,
+  useGetYmirWarehouseAllApiQuery,
+  useLazyGetYmirWarehouseAllApiQuery,
 } = ymirApi;

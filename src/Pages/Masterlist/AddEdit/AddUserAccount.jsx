@@ -50,6 +50,7 @@ import { useLazyGetCompanyAllApiQuery } from "../../../Redux/Query/Masterlist/Ym
 import { useLazyGetBusinessUnitAllApiQuery } from "../../../Redux/Query/Masterlist/YmirCoa/BusinessUnit";
 import { useLazyGetDepartmentAllApiQuery } from "../../../Redux/Query/Masterlist/YmirCoa/Department";
 import { useLazyGetLocationAllApiQuery } from "../../../Redux/Query/Masterlist/YmirCoa/Location";
+import { useLazyGetWarehouseAllApiQuery } from "../../../Redux/Query/Masterlist/Warehouse";
 
 const schema = yup.object().shape({
   id: yup.string().nullable(),
@@ -102,11 +103,23 @@ const schema = yup.object().shape({
   // position: yup.string().required(),
   username: yup.string().required().label("Username"),
   role_id: yup.object().required().label("User permission").typeError("User Permission is a required field"),
+  warehouse_id: yup
+    .object()
+    .nullable()
+    .when("role_id", {
+      is: (value) => {
+        return value?.role_name === "Warehouse";
+      },
+      then: (yup) => yup.label("Warehouse").required().typeError("Warehouse is a required field"),
+    }),
 });
 
 const AddUserAccount = (props) => {
   const { data, onUpdateResetHandler } = props;
   const dispatch = useDispatch();
+  const userTag = 1;
+
+  // console.log(data, "data");
 
   const [
     postUser,
@@ -140,7 +153,7 @@ const AddUserAccount = (props) => {
       isError: isCompanyError,
       refetch: isCompanyRefetch,
     },
-  ] = useLazyGetCompanyAllApiQuery();
+  ] = useLazyGetCompanyAllApiQuery({ tag: userTag });
 
   const [
     businessUnitTrigger,
@@ -197,6 +210,19 @@ const AddUserAccount = (props) => {
     },
   ] = useLazyGetLocationAllApiQuery();
 
+  const [
+    warehouseTrigger,
+    {
+      data: warehouseApiData = [],
+      isLoading: warehouseApiLoading,
+      isSuccess: warehouseApiSuccess,
+      isFetching: warehouseApiFetching,
+      isError: warehouseApiError,
+      error: errorData,
+      refetch: warehouseApiRefetch,
+    },
+  ] = useLazyGetWarehouseAllApiQuery();
+
   const { data: roleData = [], isLoading: isRoleLoading, isError: isRoleError } = useGetRoleAllApiQuery();
 
   const {
@@ -210,6 +236,7 @@ const AddUserAccount = (props) => {
     setValue,
   } = useForm({
     resolver: yupResolver(schema),
+    mode: "onChange",
     defaultValues: {
       id: "",
       sedar_employee: null,
@@ -225,6 +252,7 @@ const AddUserAccount = (props) => {
       // position: "",
       username: "",
       role_id: null,
+      warehouse_id: null,
     },
   });
 
@@ -266,6 +294,8 @@ const AddUserAccount = (props) => {
     }
   }, [isPostSuccess, isUpdateSuccess]);
 
+  console.log("data", data);
+
   useEffect(() => {
     if (data.status) {
       setValue("id", data.id);
@@ -286,6 +316,7 @@ const AddUserAccount = (props) => {
       // setValue("position", data.position);
       setValue("username", data.username);
       setValue("role_id", data.role);
+      setValue("warehouse_id", data?.warehouse);
     }
   }, [data]);
 
@@ -293,6 +324,7 @@ const AddUserAccount = (props) => {
     const newFormData = {
       ...formData,
       role_id: formData.role_id?.id,
+      warehouse_id: formData.warehouse_id?.id,
       password: formData.username,
     };
 
@@ -856,8 +888,36 @@ const AddUserAccount = (props) => {
                   helperText={errors?.role_id?.message}
                 />
               )}
+              onChange={(_, value) => {
+                setValue("warehouse_id", null);
+
+                return value;
+              }}
               fullWidth
             />
+
+            {watch("role_id")?.role_name === "Warehouse" && (
+              <CustomAutoComplete
+                name="warehouse_id"
+                control={control}
+                options={warehouseApiData}
+                onOpen={() => (warehouseApiSuccess ? null : warehouseTrigger(1))}
+                loading={warehouseApiLoading}
+                // disabled={updateRequest && disable}
+                size="small"
+                getOptionLabel={(option) => `${option?.warehouse_code} - ${option?.warehouse_name}`}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField
+                    color="secondary"
+                    {...params}
+                    label="Warehouse"
+                    error={!!errors?.warehouse_id}
+                    helperText={errors?.warehouse_id?.message}
+                  />
+                )}
+              />
+            )}
           </Stack>
 
           <Divider flexItem orientation="vertical" sx={{ mx: 2.5, mt: 5 }} />

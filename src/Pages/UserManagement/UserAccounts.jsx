@@ -26,6 +26,7 @@ import {
   Dialog,
   Drawer,
   Grow,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -61,6 +62,8 @@ const UserAccounts = () => {
     location_id: null,
     username: "",
     role_id: null,
+    warehouse: null,
+    warehouse_id: null,
   });
 
   const { excelExport } = useExcel();
@@ -208,6 +211,8 @@ const UserAccounts = () => {
       username,
       role,
       role_id,
+      warehouse,
+      warehouse_id,
     } = props;
     setUpdateUser({
       status: true,
@@ -224,6 +229,8 @@ const UserAccounts = () => {
       username,
       role,
       role_id,
+      warehouse,
+      warehouse_id,
     });
   };
 
@@ -242,6 +249,7 @@ const UserAccounts = () => {
       location: null,
       username: "",
       role_id: null,
+      warehouse_id: null,
     });
   };
 
@@ -482,13 +490,20 @@ const UserAccounts = () => {
                               </Typography>
                             </TableCell>
                             <TableCell className="tbl-cell">{users.username}</TableCell>
-
                             {/* <TableCell className="tbl-cell">
                               {users.subunit?.subunit_code} - {users.subunit?.subunit_name}
                             </TableCell> */}
-
                             <TableCell className="tbl-cell capitalized" sx={{ whiteSpace: "nowrap" }}>
-                              {users.role.role_name}
+                              {users.role.role_name === "Warehouse" ? (
+                                <Stack flexDirection="column">
+                                  {users.role.role_name}
+                                  <Typography fontSize={10} fontWeight={500} color="secondary.main">
+                                    {users.warehouse.warehouse_name}
+                                  </Typography>
+                                </Stack>
+                              ) : (
+                                users.role.role_name
+                              )}
                             </TableCell>
                             <TableCell className="tbl-cell">
                               <Typography fontSize={10} color="gray">
@@ -537,11 +552,9 @@ const UserAccounts = () => {
                                 />
                               )}
                             </TableCell>
-
                             <TableCell className="tbl-cell tr-cen-pad45">
                               {Moment(users.created_at).format("MMM DD, YYYY")}
                             </TableCell>
-
                             <TableCell className="tbl-cell text-center">
                               <ActionMenu
                                 status={status}
