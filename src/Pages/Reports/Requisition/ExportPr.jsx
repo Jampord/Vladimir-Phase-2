@@ -22,6 +22,7 @@ import { useLazyGetExportApiQuery } from "../../../Redux/Query/FixedAsset/FixedA
 import ExportIcon from "../../../Img/SVG/ExportIcon.svg";
 import { openToast } from "../../../Redux/StateManagement/toastSlice";
 import { useLazyGetPrWithExportApiQuery } from "../../../Redux/Query/Request/PurchaseRequest";
+import useExcelJs from "../../../Hooks/ExcelJs";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -32,7 +33,8 @@ const schema = yup.object().shape({
 const ExportPr = () => {
   const dispatch = useDispatch();
 
-  const { excelExport } = useExcel();
+  // const { excelExport } = useExcel();
+  const { excelExport } = useExcelJs();
 
   const [
     trigger,
@@ -92,34 +94,34 @@ const ExportPr = () => {
         to: moment(formData?.to).format("MMM DD, YYYY"),
         export: 1,
       }).unwrap();
-      //   console.log(res);
+
       const newObj = res?.flatMap((item) => {
         return {
-          ymir_pr_number: item?.ymir_pr_number,
-          pr_number: item?.pr_number,
-          item_status: item?.item_status,
-          status: item?.status,
-          asset_description: item?.asset_description,
-          asset_specification: item?.asset_specification,
-          brand: item?.brand,
-          transaction_number: item?.transaction_number,
-          acquisition_details: item?.acquisition_details,
-          company_code: item?.company_code,
-          company: item?.company,
-          business_unit_code: item?.business_unit_code,
-          business_unit: item?.business_unit,
-          department_code: item?.department_code,
-          department: item?.department,
-          unit_code: item?.unit_code,
-          unit: item?.unit,
-          subunit_code: item?.subunit_code,
-          subunit: item?.subunit,
-          location_code: item?.location_code,
-          location: item?.location,
-          account_title_code: item?.account_title_code,
-          account_title: item?.account_title,
-          date_needed: moment(item?.date_needed).format("MMM DD, YYYY"),
-          created_at: moment(item?.created_at).format("MMM DD, YYYY"),
+          "Ymir PR Number": item?.ymir_pr_number,
+          "PR Number": item?.pr_number,
+          "Item Status": item?.item_status,
+          Status: item?.status,
+          "Asset Description": item?.asset_description,
+          "Asset Specification": item?.asset_specification,
+          Brand: item?.brand,
+          "Transaction Number": item?.transaction_number,
+          "Acquisition Details": item?.acquisition_details,
+          "Company Code": item?.company_code,
+          Company: item?.company,
+          "Business Unit Code": item?.business_unit_code,
+          "Business Unit": item?.business_unit,
+          "Department Code": item?.department_code,
+          Department: item?.department,
+          "Unit Code": item?.unit_code,
+          Unit: item?.unit,
+          "Subunit Code": item?.subunit_code,
+          Subunit: item?.subunit,
+          "Location Code": item?.location_code,
+          Location: item?.location,
+          "Account Title Code": item?.account_title_code,
+          "Account Title": item?.account_title,
+          "Date Needed": moment(item?.date_needed).format("MMM DD, YYYY"),
+          "Created At": moment(item?.created_at).format("MMM DD, YYYY"),
         };
       });
 
@@ -173,7 +175,7 @@ const ExportPr = () => {
         }}
       >
         <Typography variant="h5" color="secondary" sx={{ fontFamily: "Anton" }}>
-          Export Asset
+          Export PR Reports
         </Typography>
 
         <Box

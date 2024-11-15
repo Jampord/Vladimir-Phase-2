@@ -21,6 +21,7 @@ import { closeExport } from "../../Redux/StateManagement/booleanStateSlice";
 import { useLazyGetExportApiQuery } from "../../Redux/Query/FixedAsset/FixedAssets";
 import ExportIcon from "../../Img/SVG/ExportIcon.svg";
 import { openToast } from "../../Redux/StateManagement/toastSlice";
+import useExcelJs from "../../Hooks/ExcelJs";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -32,7 +33,8 @@ const schema = yup.object().shape({
 const ExportFixedAsset = () => {
   const dispatch = useDispatch();
 
-  const { excelExport } = useExcel();
+  // const { excelExport } = useExcel();
+  const { excelExport } = useExcelJs();
 
   const [
     trigger,
