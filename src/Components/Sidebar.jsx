@@ -144,6 +144,7 @@ const Sidebar = () => {
 
   const { pathname } = useLocation();
   const location = useLocation();
+  // console.log("location", location);
 
   // COLLAPSE SIDEBAR
   useEffect(() => {
@@ -611,6 +612,7 @@ const Sidebar = () => {
           icon: SummarizeRounded,
           path: "/reports/pr-report",
           permission: "pr-report",
+          setter: closeCollapse,
         },
         // {
         //   label: "Report 2",
@@ -634,7 +636,6 @@ const Sidebar = () => {
         setSettingsCollapse(false);
         setAssetRequisitionCollapse(false);
         setAssetMovementCollapse(false);
-        setReportCollapse(false);
         closeCollapse;
         dispatch(openSidebar());
       },
