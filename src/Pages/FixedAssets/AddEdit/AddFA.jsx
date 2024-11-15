@@ -57,6 +57,7 @@ import { useLazyGetCycleCountStatusAllApiQuery } from "../../../Redux/Query/Mast
 import { useLazyGetDepreciationStatusAllApiQuery } from "../../../Redux/Query/Masterlist/Status/DepreciationStatus";
 import { AddBox, Close } from "@mui/icons-material";
 import { useLazyGetMajorCategoryAllApiQuery } from "../../../Redux/Query/Masterlist/Category/MajorCategory";
+import { useLazyGetUnitOfMeasurementAllApiQuery } from "../../../Redux/Query/Masterlist/YmirCoa/UnitOfMeasurement";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -177,6 +178,7 @@ const schema = yup.object().shape({
   voucher_date: yup.string().nullable().label("Voucher Date").typeError("Voucher Date is a required field"),
   receipt: yup.string(),
   quantity: yup.number().required().typeError("Quantity is a required field"),
+  uom_id: yup.object().required().label("UOM").typeError("UOM is a required field"),
   asset_status_id: yup
     .string()
     .transform((value) => value?.id.toString())
@@ -379,6 +381,17 @@ const AddFa = (props) => {
   ] = useLazyGetSedarUsersApiQuery();
 
   const [
+    uomTrigger,
+    {
+      data: uomData = [],
+      isLoading: isUnitOfMeasurementLoading,
+      isSuccess: isUnitOfMeasurementSuccess,
+      isError: isUnitOfMeasurementError,
+      refetch: isUnitOfMeasurementRefetch,
+    },
+  ] = useLazyGetUnitOfMeasurementAllApiQuery();
+
+  const [
     assetStatusTrigger,
     {
       data: assetStatusData = [],
@@ -467,6 +480,7 @@ const AddFa = (props) => {
       receipt: "",
       po_number: "",
       quantity: 1,
+      uom_id: null,
       asset_status_id: null,
       cycle_count_status_id: null,
       movement_status_id: null,
@@ -569,6 +583,7 @@ const AddFa = (props) => {
       setValue("receipt", data.receipt);
       setValue("po_number", data.po_number);
       setValue("quantity", data.quantity);
+      setValue("uom_id", data?.unit_of_measure);
       setValue("asset_status_id", data.asset_status);
       setValue("cycle_count_status_id", data.cycle_count_status);
       setValue("movement_status_id", data.movement_status);
@@ -617,6 +632,7 @@ const AddFa = (props) => {
       acquisition_cost: formData.acquisition_cost === null ? 0 : formData.acquisition_cost,
       scrap_value: formData.scrap_value === null ? 0 : formData.scrap_value,
       depreciable_basis: formData.depreciable_basis === null ? 0 : formData.depreciable_basis,
+      uom_id: formData?.uom_id?.id?.toString(),
     };
 
     if (data.status) {
@@ -1319,6 +1335,29 @@ const AddFa = (props) => {
                 error={!!errors?.quantity}
                 helperText={errors?.quantity?.message}
                 fullWidth={isFullWidth ? true : false}
+              />
+
+              <CustomAutoComplete
+                control={control}
+                name="uom_id"
+                size="small"
+                options={uomData}
+                onOpen={() => (isUnitOfMeasurementSuccess ? null : uomTrigger())}
+                loading={isUnitOfMeasurementLoading}
+                getOptionLabel={(option) => {
+                  return `${option.uom_code} - ${option.uom_name}`;
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    color="secondary"
+                    label="UOM"
+                    error={!!errors?.uom_id}
+                    helperText={errors?.uom_id?.message}
+                  />
+                )}
+                fullWidth
               />
 
               <CustomAutoComplete
