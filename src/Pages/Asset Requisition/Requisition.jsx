@@ -57,9 +57,10 @@ import {
   Visibility,
 } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
-import { closeDialog, openDialog } from "../../Redux/StateManagement/booleanStateSlice";
+import { closeDialog, closeExport, openDialog, openExport } from "../../Redux/StateManagement/booleanStateSlice";
 import RequestTimeline from "./RequestTimeline";
 import { useDeleteRequestContainerAllApiMutation } from "../../Redux/Query/Request/RequestContainer";
+import ExportRequisition from "./ExportRequisition";
 
 const Requisition = () => {
   const [search, setSearch] = useState("");
@@ -138,6 +139,8 @@ const Requisition = () => {
     },
     { refetchOnMountOrArgChange: true }
   );
+
+  // console.log("requisitiondata", requisitionData);
 
   const onVoidHandler = async (id) => {
     dispatch(
@@ -231,6 +234,7 @@ const Requisition = () => {
       : navigate(`/asset-requisition/requisition/view-requisition/${data.transaction_number}`, {
           state: { ...data, viewData },
         });
+    console.log("data", data);
   };
 
   const isAdditionalCost = requisitionData?.data.map((item) => item.is_addcost);
@@ -306,12 +310,18 @@ const Requisition = () => {
 
   const isCancelled = requisitionData?.data?.map((item) => item.status).includes("Cancelled");
 
+  const showExport = useSelector((state) => state.booleanState.exportFile);
+  const openExportDialog = (data) => {
+    dispatch(openExport());
+    // setPrItems(data);
+  };
+
   return (
     <Box className="mcontainer">
       <Typography className="mcontainer__title" sx={{ fontFamily: "Anton", fontSize: "2rem" }}>
         Requisition
       </Typography>
-      {requisitionLoading && <MasterlistSkeleton onAdd={true} />}
+      {requisitionLoading && <MasterlistSkeleton onAdd={true} onExport={false} />}
       {requisitionError && <ErrorFetching refetch={refetch} error={errorData} />}
       {requisitionData && !requisitionError && (
         <>
@@ -520,14 +530,33 @@ const Requisition = () => {
               </TableContainer>
             </Box>
 
-            <CustomTablePagination
-              total={requisitionData?.total}
-              success={requisitionSuccess}
-              current_page={requisitionData?.current_page}
-              per_page={requisitionData?.per_page}
-              onPageChange={pageHandler}
-              onRowsPerPageChange={perPageHandler}
-            />
+            <Box className="mcontainer__pagination-export">
+              <Button
+                className="mcontainer__export"
+                variant="outlined"
+                size="small"
+                color="text"
+                startIcon={<IosShareRounded color="primary" />}
+                onClick={openExportDialog}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "10px 20px",
+                }}
+              >
+                EXPORT
+              </Button>
+
+              <CustomTablePagination
+                total={requisitionData?.total}
+                success={requisitionSuccess}
+                current_page={requisitionData?.current_page}
+                per_page={requisitionData?.per_page}
+                onPageChange={pageHandler}
+                onRowsPerPageChange={perPageHandler}
+              />
+            </Box>
           </Box>
         </>
       )}
@@ -539,6 +568,15 @@ const Requisition = () => {
         PaperProps={{ sx: { borderRadius: "10px", maxWidth: "700px" } }}
       >
         <RequestTimeline data={transactionIdData} />
+      </Dialog>
+
+      <Dialog
+        open={showExport}
+        TransitionComponent={Grow}
+        onClose={() => dispatch(closeExport())}
+        PaperProps={{ sx: { maxWidth: "1320px", borderRadius: "10px", p: 3 } }}
+      >
+        <ExportRequisition />
       </Dialog>
     </Box>
   );

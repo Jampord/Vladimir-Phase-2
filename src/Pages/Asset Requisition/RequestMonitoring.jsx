@@ -41,10 +41,11 @@ import {
 } from "@mui/material";
 import { AddBox, AddCircleSharp, IosShareRounded, LibraryAdd, Visibility } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { closeDialog, openDialog } from "../../Redux/StateManagement/booleanStateSlice";
+import { closeDialog, closeExport, openDialog, openExport } from "../../Redux/StateManagement/booleanStateSlice";
 import RequestTimeline from "./RequestTimeline";
 import useExcel from "../../Hooks/Xlsx";
 import moment from "moment";
+import ExportRequestMonitoring from "./ExportRequestMonitoring";
 
 const RequestMonitoring = () => {
   const [search, setSearch] = useState("");
@@ -60,6 +61,7 @@ const RequestMonitoring = () => {
   const navigate = useNavigate();
   const isSmallScreen = useMediaQuery("(max-width: 500px)");
   const dialog = useSelector((state) => state.booleanState.dialog);
+  const showExport = useSelector((state) => state.booleanState.exportFile);
 
   const { excelExport } = useExcel();
 
@@ -293,6 +295,11 @@ const RequestMonitoring = () => {
 
   const isCancelled = requisitionData?.data?.map((item) => item.status).includes("Cancelled");
 
+  const openExportDialog = () => {
+    dispatch(openExport());
+    // setPrItems(data);
+  };
+
   return (
     <Box className="mcontainer">
       <Typography className="mcontainer__title" sx={{ fontFamily: "Anton", fontSize: "2rem" }}>
@@ -457,14 +464,33 @@ const RequestMonitoring = () => {
               </TableContainer>
             </Box>
 
-            <CustomTablePagination
-              total={requisitionData?.total}
-              success={requisitionSuccess}
-              current_page={requisitionData?.current_page}
-              per_page={requisitionData?.per_page}
-              onPageChange={pageHandler}
-              onRowsPerPageChange={perPageHandler}
-            />
+            <Box className="mcontainer__pagination-export">
+              <Button
+                className="mcontainer__export"
+                variant="outlined"
+                size="small"
+                color="text"
+                startIcon={<IosShareRounded color="primary" />}
+                onClick={openExportDialog}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "10px 20px",
+                }}
+              >
+                EXPORT
+              </Button>
+
+              <CustomTablePagination
+                total={requisitionData?.total}
+                success={requisitionSuccess}
+                current_page={requisitionData?.current_page}
+                per_page={requisitionData?.per_page}
+                onPageChange={pageHandler}
+                onRowsPerPageChange={perPageHandler}
+              />
+            </Box>
           </Box>
         </>
       )}
@@ -476,6 +502,15 @@ const RequestMonitoring = () => {
         PaperProps={{ sx: { borderRadius: "10px", maxWidth: "700px" } }}
       >
         <RequestTimeline data={transactionIdData} />
+      </Dialog>
+
+      <Dialog
+        open={showExport}
+        TransitionComponent={Grow}
+        onClose={() => dispatch(closeExport())}
+        PaperProps={{ sx: { maxWidth: "1320px", borderRadius: "10px", p: 3 } }}
+      >
+        <ExportRequestMonitoring />
       </Dialog>
     </Box>
   );
