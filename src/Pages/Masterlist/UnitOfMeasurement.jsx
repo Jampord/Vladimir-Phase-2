@@ -82,7 +82,7 @@ const UnitOfMeasurement = () => {
   // Table Properties --------------------------------
   const limitHandler = (e) => {
     setPage(1);
-    setLimit(parseInt(e.target.value));
+    setPerPage(parseInt(e.target.value));
   };
 
   const pageHandler = (_, page) => {
