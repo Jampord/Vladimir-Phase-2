@@ -20,6 +20,9 @@ import {
   Ballot,
   BusinessCenter,
   Straighten,
+  HomeRepairService,
+  StoreRounded,
+  Warehouse,
 } from "@mui/icons-material";
 import Cards from "../../Components/Reusable/Cards";
 
@@ -75,6 +78,27 @@ const MasterlistList = [
   },
 
   {
+    icon: <StoreRounded />,
+    label: "Supplier",
+    description: "Synching of Supplier from Ymir to Vladimir",
+    path: "/masterlist/supplier",
+  },
+
+  {
+    icon: <Straighten />,
+    label: "Unit of Measurement",
+    description: "Setting up of UOM masterlist",
+    path: "/masterlist/unit-of-measurement",
+  },
+
+  {
+    icon: <HomeRepairService />,
+    label: "Small Tools",
+    description: "Synching of Small Tools from Ymir to Vladimir",
+    path: "/masterlist/small-tools",
+  },
+
+  {
     icon: <Groups2Rounded />,
     label: "Division",
     description: "Adding, editing and archiving of Division masterlist",
@@ -95,6 +119,13 @@ const MasterlistList = [
   },
 
   {
+    icon: <Warehouse />,
+    label: "Warehouse",
+    description: "Synching of Warehouse from Ymir to Vladimir",
+    path: "/masterlist/warehouse",
+  },
+
+  {
     icon: <ManageAccountsSharp />,
     label: "Category",
     description: "Adding of Major and Minor Category masterlist",
@@ -107,19 +138,12 @@ const MasterlistList = [
     description: "Setting up of Fixed Asset status masterlist",
     path: "/masterlist/status-category",
   },
-
-  {
-    icon: <Straighten />,
-    label: "Unit of Measurement",
-    description: "Setting up of UOM masterlist",
-    path: "/masterlist/unit-of-measurement",
-  },
 ];
 
 const Masterlist = () => {
   const location = useLocation();
   const isSmallScreen = useMediaQuery("(max-width: 590px)");
-  // console.log(location.pathname);
+  // console.log(location);
 
   return (
     <>
