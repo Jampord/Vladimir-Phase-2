@@ -18,8 +18,17 @@ export const transferApi = createApi({
 
   endpoints: (builder) => ({
     getTransferApi: builder.query({
-      query: (params) =>
-        `asset-transfer?per_page=${params.per_page}&page=${params.page}&search=${params.search}&status=${params.status}`,
+      query: (params) => `transfer?per_page=${params.per_page}&page=${params.page}`,
+      providesTags: ["Transfer"],
+    }),
+
+    getTransferReceiverApi: builder.query({
+      query: (params) => `transfer-receiver?per_page=${params.per_page}&page=${params.page}&status=${params.status}`,
+      providesTags: ["Transfer"],
+    }),
+
+    getSingleTransferReceiverApi: builder.query({
+      query: (params) => `/show-receiving/${params.movement_id}`,
       providesTags: ["Transfer"],
     }),
 
@@ -28,7 +37,11 @@ export const transferApi = createApi({
     }),
 
     getTransferNumberApi: builder.query({
-      query: (params) => `asset-transfer/${params.transfer_number}`,
+      query: (params) => `transfer/${params.transfer_number}`,
+    }),
+
+    getTransferNumberReceiverApi: builder.query({
+      query: (params) => `transfer/${params.transfer_number}?is_receiver=1`,
     }),
 
     getFixedAssetTransferAllApi: builder.query({
@@ -61,7 +74,7 @@ export const transferApi = createApi({
     }),
 
     getNextTransfer: builder.query({
-      query: () => `/next-transfer`,
+      query: () => `/get-next-transfer`,
     }),
 
     downloadAttachmentApi: builder.mutation({
@@ -70,13 +83,34 @@ export const transferApi = createApi({
       }),
       invalidatesTags: ["Transfer"],
     }),
+
+    patchTransferReceivingApi: builder.mutation({
+      query: (body) => ({
+        url: `/received-confirmation`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Transfer"],
+    }),
+
+    patchVoidTransferApi: builder.mutation({
+      query: (body) => ({
+        url: `/void-transfer`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Transfer"],
+    }),
   }),
 });
 
 export const {
   useGetTransferApiQuery,
+  useGetTransferReceiverApiQuery,
+  useGetSingleTransferReceiverApiQuery,
   useLazyGetTransferAllApiQuery,
   useGetTransferNumberApiQuery,
+  useGetTransferNumberReceiverApiQuery,
   useLazyGetFixedAssetTransferAllApiQuery,
   useGetTransferAllApiQuery,
   useGetTransferApprovalApiQuery,
@@ -84,4 +118,6 @@ export const {
   useArchiveTransferApiMutation,
   useLazyGetNextTransferQuery,
   useDownloadAttachmentApiMutation,
+  usePatchTransferReceivingApiMutation,
+  usePatchVoidTransferApiMutation,
 } = transferApi;

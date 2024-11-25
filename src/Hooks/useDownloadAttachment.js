@@ -22,7 +22,7 @@ export const useDownloadAttachment = async ({ attachment, id }) => {
 
 export const useDownloadTransferAttachment = async ({ attachments, transfer_number }) => {
   try {
-    const response = await fetch(`${process.env.VLADIMIR_BASE_URL}/transfer-attachment/${transfer_number}`, {
+    const response = await fetch(`${process.env.VLADIMIR_BASE_URL}/transfer-download/${transfer_number}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

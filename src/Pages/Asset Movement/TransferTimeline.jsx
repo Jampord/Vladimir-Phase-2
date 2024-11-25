@@ -19,6 +19,7 @@ import Moment from "moment";
 
 const TransferTimeline = (props) => {
   const { data: transactionData } = props;
+  console.log("transactionData", transactionData);
   const dispatch = useDispatch();
 
   return (
@@ -137,6 +138,7 @@ const TransferTimeline = (props) => {
                 direction="up"
                 sx={{ width: "100%" }}
               >
+                {console.log("item", item)}
                 <Step key={index} last>
                   <Stack position="relative" justifyContent="center" flexDirection="column">
                     {/* Date and Time */}
@@ -154,7 +156,7 @@ const TransferTimeline = (props) => {
                       icon={
                         item?.action === "Declined" || item?.action === "Returned" || item?.action === "Cancelled" ? (
                           <Error sx={{ color: "error.light" }} />
-                        ) : item?.action === "Claimed" ? (
+                        ) : item?.action === "fully Received" || item?.action === "item Received" ? (
                           <HowToReg sx={{ color: "success.main" }} />
                         ) : item?.action === "Approved" ? (
                           <FactCheck sx={{ color: "success.main" }} />
@@ -177,7 +179,7 @@ const TransferTimeline = (props) => {
                             item?.action === "Cancelled Remaining Items" ||
                             item.action === "Cancelled Item To PO"
                               ? "#ff000017"
-                              : item?.action === "Approved" || item?.action === "Claimed"
+                              : item?.action === "Approved" || item?.action === "fully Received"
                               ? "#00800016"
                               : item?.action === "Removed PR Number"
                               ? "#ff000017"
@@ -195,13 +197,13 @@ const TransferTimeline = (props) => {
                               item?.action === "Cancelled Remaining Items" ||
                               item.action === "Cancelled Item To PO"
                                 ? "error.light"
-                                : item?.action === "Approved" || item?.action === "Claimed"
+                                : item?.action === "Approved" || item?.action === "fully Received"
                                 ? "success.light"
                                 : item?.action === "Removed PR Number"
                                 ? "error.light"
                                 : "secondary.light",
                             width: "3px",
-                            height: item?.action === "Claimed" ? "70px" : "50px",
+                            height: item?.action === "fully Received" ? "70px" : "50px",
                             ml: "5px",
                             borderRadius: "20px",
                             border: "none",
@@ -224,7 +226,7 @@ const TransferTimeline = (props) => {
                           )}
 
                           {/* CLAIMED */}
-                          {item?.action === "Claimed" && (
+                          {item?.action === "fully Received" && (
                             <>
                               <Typography fontSize={12} fontWeight={600} color="text.light">
                                 Tag Number: {item?.vladimir_tag_number}
@@ -235,7 +237,7 @@ const TransferTimeline = (props) => {
                             </>
                           )}
 
-                          {item?.action === "Claimed" && (
+                          {item?.action === "fully Received" && (
                             <Typography fontSize={12} fontWeight={600} color="primary.dark">
                               Received by: {item?.received_by}
                             </Typography>

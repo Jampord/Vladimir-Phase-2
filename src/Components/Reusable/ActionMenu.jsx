@@ -116,7 +116,7 @@ const ActionMenu = (props) => {
   };
 
   const handleVoid = () => {
-    onVoidHandler(data?.transaction_number);
+    onVoidHandler(data?.transaction_number || data?.id);
     handleClose();
   };
 

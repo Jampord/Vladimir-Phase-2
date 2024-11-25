@@ -85,6 +85,11 @@ import Reports from "./Pages/Reports/Reports";
 import PurchaseRequestReport from "./Pages/Reports/Requisition/PurchaseRequestReport";
 import SmallTools from "./Pages/Masterlist/SmallTools";
 import TokenSetup from "./Components/TokenSetup";
+import ReceivingOfAsset from "./Pages/Asset Requisition/Received Asset/ReceivedAsset";
+import ReceivingOfTransfer from "./Pages/Asset Movement/Receiving of Transfer/ReceivingOfTranfer";
+import AssetTransferView from "./Pages/Asset Movement/Receiving of Transfer/AssetTransferView";
+import Pullout from "./Pages/Asset Movement/Pullout/Pullout";
+import AddPullout from "./Pages/Asset Movement/Pullout/AddPullout";
 
 const userData = JSON.parse(localStorage.getItem("user"));
 const userRole = userData?.role?.access_permission.split(", ");
@@ -397,13 +402,28 @@ const router = createBrowserRouter([
               },
               {
                 path: "pull-out",
-                // element: <ServiceProvider />,
+                element: <Pullout />,
+                handle: { permission: "pull-out" },
+              },
+              {
+                path: "pull-out/add-pull-out",
+                element: <AddPullout />,
                 handle: { permission: "pull-out" },
               },
               {
                 path: "disposal",
                 // element: <Category />,
                 handle: { permission: "disposal" },
+              },
+              {
+                path: "transfer-receiving",
+                element: <ReceivingOfTransfer />,
+                handle: { permission: "transfer-receiving" },
+              },
+              {
+                path: "transfer-receiving/:movement_id",
+                element: <AssetTransferView />,
+                handle: { permission: "transfer-receiving" },
               },
             ],
           },

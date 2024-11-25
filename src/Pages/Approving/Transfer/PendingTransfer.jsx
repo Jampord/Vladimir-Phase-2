@@ -141,7 +141,7 @@ const PendingTransfer = (props) => {
             dispatch(onLoading());
             const result = await patchApprovalStatus({
               action: "Approve",
-              transfer_number: transfer_number,
+              movement_id: transfer_number,
             }).unwrap();
 
             dispatch(
@@ -211,7 +211,7 @@ const PendingTransfer = (props) => {
             dispatch(onLoading());
             const result = await patchApprovalStatus({
               action: "Return",
-              transfer_number: transfer_number,
+              movement_id: transfer_number,
               remarks: data,
             }).unwrap();
 
@@ -250,8 +250,9 @@ const PendingTransfer = (props) => {
   };
 
   const handleViewTransfer = (data) => {
+    console.log("pendingtransferdata: ", data);
     // const view = true;
-    navigate(`/approving/transfer/${data?.transfer_number}`, {
+    navigate(`/approving/transfer/${data?.id}`, {
       state: { ...data },
     });
   };
@@ -343,7 +344,7 @@ const PendingTransfer = (props) => {
                       </TableSortLabel>
                     </TableCell>
 
-                    <TableCell className="tbl-cell-category  text-center">Action</TableCell>
+                    {/* <TableCell className="tbl-cell-category  text-center">Action</TableCell> */}
                   </TableRow>
                 </TableHead>
 
@@ -355,7 +356,7 @@ const PendingTransfer = (props) => {
                       {approvalSuccess &&
                         [...pendingTransferData.data].sort(comparator(order, orderBy))?.map((data) => (
                           <TableRow
-                            key={data?.transfer_number}
+                            key={data?.id}
                             hover={true}
                             sx={{
                               "&:last-child td, &:last-child th": {
@@ -363,7 +364,7 @@ const PendingTransfer = (props) => {
                               },
                             }}
                           >
-                            <TableCell className="tbl-cell-category ">{data?.transfer_number}</TableCell>
+                            <TableCell className="tbl-cell-category ">{data?.id}</TableCell>
 
                             <TableCell className="tbl-cell-category ">{data?.description}</TableCell>
 
@@ -402,7 +403,7 @@ const PendingTransfer = (props) => {
                               {Moment(data.asset_request?.date_requested).format("MMM DD, YYYY")}
                             </TableCell>
 
-                            <TableCell className="tbl-cell-category text-center">
+                            {/* <TableCell className="tbl-cell-category text-center">
                               <ActionMenu
                                 status={status}
                                 data={data}
@@ -411,7 +412,7 @@ const PendingTransfer = (props) => {
                                 onApprovalReturnHandler={onApprovalReturnHandler}
                                 hideArchive
                               />
-                            </TableCell>
+                            </TableCell> */}
                           </TableRow>
                         ))}
                     </>

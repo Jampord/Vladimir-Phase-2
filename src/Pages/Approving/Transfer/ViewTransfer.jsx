@@ -91,6 +91,7 @@ import { closeConfirm, onLoading, openConfirm } from "../../../Redux/StateManage
 import axios from "axios";
 import { usePatchApprovalStatusApiMutation } from "../../../Redux/Query/Approving/Approval";
 import { usePatchTransferApprovalStatusApiMutation } from "../../../Redux/Query/Approving/TransferApproval";
+import { useLazyGetUserAccountAllApiQuery } from "../../../Redux/Query/UserManagement/UserAccountsApi";
 
 const schema = yup.object().shape({
   id: yup.string(),
@@ -104,22 +105,30 @@ const schema = yup.object().shape({
       then: (yup) => yup.label("Accountable").required().typeError("Accountable is a required field"),
     }),
 
+  receiver_id: yup.object().required().label("Receiver Id").typeError("Receiver Id is required"),
+
   department_id: yup.object().required().label("Department").typeError("Department is a required field"),
   company_id: yup.object().required().label("Company").typeError("Company is a required field"),
   business_unit_id: yup.object().required().label("Business Unit").typeError("Business Unit is a required field"),
   unit_id: yup.object().required().label("Unit").typeError("Unit is a required field"),
   subunit_id: yup.object().required().label("Subunit").typeError("Subunit is a required field"),
   location_id: yup.object().required().label("Location").typeError("Location is a required field"),
-  account_title_id: yup.object().required().label("Account Title").typeError("Account Title is a required field"),
+  // account_title_id: yup.object().required().label("Account Title").typeError("Account Title is a required field"),
 
   remarks: yup.string().label("Remarks"),
   attachments: yup.mixed().required().label("Attachments"),
-  asset: yup.array().of(
+  assets: yup.array().of(
     yup.object().shape({
       asset_id: yup.string(),
       fixed_asset_id: yup.object().required("Fixed Asset is a Required Field"),
       asset_accountable: yup.string(),
       created_at: yup.date(),
+      company_id: yup.string(),
+      business_unit_id: yup.string(),
+      department_id: yup.string(),
+      unit_id: yup.string(),
+      sub_unit_id: yup.string(),
+      location_id: yup.string(),
     })
   ),
 });
@@ -130,6 +139,7 @@ const AddTransfer = (props) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { state: transactionData } = useLocation();
+  console.log("transactionData: ", transactionData);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -150,12 +160,14 @@ const AddTransfer = (props) => {
     unit_id: null,
     subunit_id: null,
     location_id: null,
-    account_title_id: null,
+    // account_title_id: null,
 
     remarks: "",
     attachments: null,
 
-    asset: [{ id: null, fixed_asset_id: null, asset_accountable: "", created_at: null }],
+    assets: [{ id: null, fixed_asset_id: null, asset_accountable: "", created_at: null }],
+
+    receiver_id: null,
   });
 
   const [
@@ -185,16 +197,16 @@ const AddTransfer = (props) => {
   //* QUERY ------------------------------------------------------------------
 
   const {
-    data: transferData,
+    data: transferData = [],
     isLoading: isTransferLoading,
     isSuccess: isTransferSuccess,
     isError: isTransferError,
     refetch: isTransferRefetch,
   } = useGetTransferNumberApiQuery(
-    { transfer_number: transactionData?.transfer_number },
+    { transfer_number: transactionData?.id ? transactionData?.id : transactionData?.transfer_number },
     { refetchOnMountOrArgChange: true }
   );
-  // console.log(transferData);
+  console.log("transferData: ", transferData[0]);
 
   const [
     companyTrigger,
@@ -289,6 +301,12 @@ const AddTransfer = (props) => {
     },
   ] = useLazyGetFixedAssetTransferAllApiQuery({}, { refetchOnMountOrArgChange: true });
 
+  const [
+    userAccountTrigger,
+    { data: userData = [], isLoading: isUserLoading, isSuccess: isUserSuccess, isError: isUserError },
+  ] = useLazyGetUserAccountAllApiQuery();
+  console.log("userData: ", userData);
+
   //* useForm --------------------------------------------------------------------
   const {
     handleSubmit,
@@ -314,19 +332,21 @@ const AddTransfer = (props) => {
       unit_id: null,
       subunit_id: null,
       location_id: null,
-      account_title_id: null,
+      // account_title_id: null,
 
       remarks: "",
       attachments: null,
 
-      asset: [{ id: null, fixed_asset_id: null, asset_accountable: "", created_at: null }],
+      assets: [{ id: null, fixed_asset_id: null, asset_accountable: "", created_at: null }],
+
+      receiver_id: null,
     },
   });
 
   //* Append Table ---------------------------------------------------------------
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "asset",
+    name: "assets",
   });
   const handleAppendItem = () => append({ id: null, fixed_asset_id: null, asset_accountable: "", created_at: null });
 
@@ -336,7 +356,7 @@ const AddTransfer = (props) => {
       if (postError?.status === 422) {
         dispatch(
           openToast({
-            message: postError?.transferData?.errors.detail,
+            message: postError?.transferData[0]?.errors.detail,
             duration: 5000,
             variant: "error",
           })
@@ -353,34 +373,36 @@ const AddTransfer = (props) => {
     }
   }, [isPostError]);
 
+  const transferNumberData = transferData?.at(0);
   useEffect(() => {
-    const transferNumberData = transferData?.at(0);
+    console.log("transferNumberData", transferNumberData);
 
     if (transferNumberData) {
       fixedAssetTrigger();
-      const accountable = {
-        general_info: {
-          full_id_number: transferNumberData?.accountable?.split(" ")[0],
-          full_id_number_full_name: transferNumberData?.accountable,
-        },
-      };
+      // const accountable = {
+      //   general_info: {
+      //     full_id_number: transferNumberData?.accountable?.split(" ")[0],
+      //     full_id_number_full_name: transferNumberData?.accountable,
+      //   },
+      // };
       const attachmentFormat = transferNumberData?.attachments === null ? "" : transferNumberData?.attachments;
 
       setValue("description", transferNumberData?.description);
       setValue("accountability", transferNumberData?.accountability);
-      setValue("accountable", accountable);
+      setValue("accountable", transferNumberData?.accountable);
+      setValue("receiver_id", transferNumberData?.receiver);
       setValue("department_id", transferNumberData?.department);
       setValue("company_id", transferNumberData?.company);
       setValue("business_unit_id", transferNumberData?.business_unit);
       setValue("unit_id", transferNumberData?.unit);
       setValue("subunit_id", transferNumberData?.subunit);
       setValue("location_id", transferNumberData?.location);
-      setValue("account_title_id", transferNumberData?.account_title);
+      // setValue("account_title_id", transferNumberData?.account_title);
       setValue("remarks", transferNumberData?.remarks);
       setValue("attachments", attachmentFormat);
       setValue(
-        "asset",
-        transferNumberData?.asset.map((asset) => ({
+        "assets",
+        transferNumberData?.assets?.map((asset) => ({
           id: asset.id,
           // fixed_asset_id: {
           //   id: asset?.vladimir_tag_number.id,
@@ -390,10 +412,16 @@ const AddTransfer = (props) => {
           fixed_asset_id: asset,
           asset_accountable: asset.accountable === "-" ? "Common" : asset.accountable,
           created_at: asset.created_at || asset.acquisition_date,
+          company_id: asset.company?.company_name,
+          business_unit_id: asset.business_unit?.business_unit_name,
+          department_id: asset.department?.department_name,
+          unit_id: asset.unit?.unit_name,
+          sub_unit_id: asset.subunit?.subunit_name,
+          location_id: asset.location?.location_name,
         }))
       );
     }
-  }, [transferData, edit]);
+  }, [transferData, edit, transferNumberData, transactionData, transferData[0]]);
 
   // console.log("asset", watch("asset"));
   // console.log("asset", data?.asset);
@@ -442,14 +470,15 @@ const AddTransfer = (props) => {
       unit_id: formData.unit_id.id?.toString(),
       subunit_id: formData.subunit_id.id?.toString(),
       location_id: formData?.location_id.id?.toString(),
-      account_title_id: formData?.account_title_id.id?.toString(),
+      // account_title_id: formData?.account_title_id.id?.toString(),
       accountability: formData?.accountability?.toString(),
       accountable: accountableFormat,
       attachments: formData?.attachments,
 
-      asset: formData?.asset?.map((item) => ({
+      asset: formData?.assets?.map((item) => ({
         fixed_asset_id: item.fixed_asset_id.id,
       })),
+      receiver_id: formData?.receiver_id?.id,
     };
     const submitData = async () => {
       setIsLoading(true);
@@ -621,24 +650,7 @@ const AddTransfer = (props) => {
         ),
 
         onConfirm: async () => {
-          try {
-            dispatch(onLoading());
-            const result = await patchApprovalStatus({
-              action: "Approve",
-              transfer_number: transfer_number,
-            }).unwrap();
-
-            dispatch(
-              openToast({
-                message: result.message,
-                duration: 5000,
-              })
-            );
-
-            dispatch(closeConfirm());
-            const next = await getNextTransfer().unwrap();
-            navigate(`/approving/transfer/${next?.[0].transfer_number}`, { state: next[0], replace: true });
-          } catch (err) {
+          const noNextData = (err) => {
             if (err?.status === 404) {
               navigate(`/approving/transfer`);
             } else if (err?.status === 422) {
@@ -650,6 +662,7 @@ const AddTransfer = (props) => {
                   variant: "error",
                 })
               );
+              navigate(`/approving/transfer`);
             } else if (err?.status !== 422) {
               dispatch(
                 openToast({
@@ -658,7 +671,33 @@ const AddTransfer = (props) => {
                   variant: "error",
                 })
               );
+              navigate(`/approving/transfer`);
             }
+          };
+
+          try {
+            dispatch(onLoading());
+            const result = await patchApprovalStatus({
+              action: "Approve",
+              movement_id: transfer_number,
+            }).unwrap();
+
+            isTransferRefetch();
+
+            dispatch(
+              openToast({
+                message: result.message,
+                duration: 5000,
+              })
+            );
+
+            dispatch(closeConfirm());
+            const next = await getNextTransfer().unwrap();
+            console.log("next: ", next);
+            navigate(`/approving/transfer/${next?.transfer_number}`, { state: next, replace: true });
+          } catch (err) {
+            noNextData(err);
+            // navigate(`/approving/transfer`);
           }
         },
       })
@@ -692,11 +731,36 @@ const AddTransfer = (props) => {
         remarks: true,
 
         onConfirm: async (data) => {
+          const noNextData = (err) => {
+            if (err?.status === 404) {
+              navigate(`/approving/transfer`);
+            } else if (err?.status === 422) {
+              dispatch(
+                openToast({
+                  // message: err.data.message,
+                  message: err.data.errors?.detail,
+                  duration: 5000,
+                  variant: "error",
+                })
+              );
+              navigate(`/approving/transfer`);
+            } else if (err?.status !== 422) {
+              dispatch(
+                openToast({
+                  message: "Something went wrong. Please try again.",
+                  duration: 5000,
+                  variant: "error",
+                })
+              );
+              navigate(`/approving/transfer`);
+            }
+          };
+
           try {
             dispatch(onLoading());
             const result = await patchApprovalStatus({
               action: "Return",
-              transfer_number: transfer_number,
+              movement_id: transfer_number,
               remarks: data,
             }).unwrap();
 
@@ -706,31 +770,12 @@ const AddTransfer = (props) => {
                 duration: 5000,
               })
             );
+
             dispatch(closeConfirm());
             const next = await getNextTransfer().unwrap();
-            navigate(`/approving/transfer/${next?.[0].transfer_number}`, { state: next?.[0], view, replace: true });
+            navigate(`/approving/transfer/${next?.transfer_number}`, { state: next, view, replace: true });
           } catch (err) {
-            console.log(err);
-            if (err?.status === 404) {
-              navigate(`/approving/transfer`);
-            } else if (err?.status === 422) {
-              dispatch(
-                openToast({
-                  // message: err.data.message,
-                  message: err?.data?.errors?.detail,
-                  duration: 5000,
-                  variant: "error",
-                })
-              );
-            } else if (err?.status !== 422) {
-              dispatch(
-                openToast({
-                  message: "Something went wrong. Please try again.",
-                  duration: 5000,
-                  variant: "error",
-                })
-              );
-            }
+            noNextData(err);
           }
         },
       })
@@ -768,7 +813,7 @@ const AddTransfer = (props) => {
             Back
           </Button>
 
-          {view && !edit
+          {/* {view && !edit
             ? !transactionData?.approved && (
                 <Button
                   variant="contained"
@@ -792,7 +837,7 @@ const AddTransfer = (props) => {
                 >
                   Cancel Edit
                 </Button>
-              )}
+              )} */}
         </Stack>
 
         <Box className="request mcontainer__wrapper" p={2} component="form" onSubmit={handleSubmit(onSubmitHandler)}>
@@ -802,7 +847,7 @@ const AddTransfer = (props) => {
                 view
                   ? edit
                     ? "EDIT INFORMATION"
-                    : `TRANSFER : ${transactionData?.transfer_number}`
+                    : `TRANSFER NO. ${transferData[0]?.movement_id}`
                   : "ADD TRANSFER REQUEST"
               }`}
             </Typography>
@@ -851,24 +896,49 @@ const AddTransfer = (props) => {
                       includeInputInList
                       disablePortal
                       filterOptions={filterOptions}
-                      options={sedarData}
-                      onOpen={() => (isSedarSuccess ? null : sedarTrigger())}
-                      loading={isSedarLoading}
-                      getOptionLabel={(option) => option.general_info?.full_id_number_full_name}
+                      options={userData}
+                      onOpen={() => (isUserSuccess ? null : userAccountTrigger())}
+                      loading={isUserLoading}
+                      getOptionLabel={(option) => option?.full_id_number_full_name}
                       isOptionEqualToValue={(option, value) =>
-                        option.general_info?.full_id_number === value.general_info?.full_id_number
+                        option?.full_id_number_full_name === value?.full_id_number_full_name
                       }
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           color="secondary"
-                          label="Accountable"
+                          label="New Custodian"
                           error={!!errors?.accountable?.message}
                           helperText={errors?.accountable?.message}
                         />
                       )}
                     />
                   )}
+
+                  <CustomAutoComplete
+                    name="receiver_id"
+                    disabled={edit ? false : view}
+                    control={control}
+                    includeInputInList
+                    disablePortal
+                    filterOptions={filterOptions}
+                    options={userData}
+                    onOpen={() => (isUserSuccess ? null : userAccountTrigger())}
+                    loading={isUserLoading}
+                    getOptionLabel={(option) => option?.full_id_number_full_name}
+                    isOptionEqualToValue={(option, value) =>
+                      option?.full_id_number_full_name === value?.full_id_number_full_name
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        color="secondary"
+                        label="Receiver"
+                        error={!!errors?.accountable?.message}
+                        helperText={errors?.accountable?.message}
+                      />
+                    )}
+                  />
 
                   <CustomAutoComplete
                     autoComplete
@@ -1028,7 +1098,7 @@ const AddTransfer = (props) => {
                     )}
                   />
 
-                  <CustomAutoComplete
+                  {/* <CustomAutoComplete
                     name="account_title_id"
                     disabled={edit ? false : view}
                     control={control}
@@ -1046,7 +1116,7 @@ const AddTransfer = (props) => {
                         helperText={errors?.account_title_id?.message}
                       />
                     )}
-                  />
+                  /> */}
 
                   <CustomTextField
                     control={control}
@@ -1104,6 +1174,7 @@ const AddTransfer = (props) => {
                     <TableCell className="tbl-cell">{transactionData ? "Ref No." : "Index"}</TableCell>
                     <TableCell className="tbl-cell">Asset</TableCell>
                     <TableCell className="tbl-cell">Accountability</TableCell>
+                    <TableCell className="tbl-cell">Chart Of Accounts</TableCell>
                     <TableCell className="tbl-cell">Acquisition Date</TableCell>
                     <TableCell className="tbl-cell" align="center">
                       Action
@@ -1117,7 +1188,7 @@ const AddTransfer = (props) => {
                       <TableCell>
                         <Controller
                           control={control}
-                          name={`asset.${index}.fixed_asset_id`}
+                          name={`assets.${index}.fixed_asset_id`}
                           render={({ field: { ref, value, onChange } }) => (
                             <Autocomplete
                               options={vTagNumberData}
@@ -1143,14 +1214,14 @@ const AddTransfer = (props) => {
                                   // onChange(newValue.id);
                                   onChange(newValue);
                                   setValue(
-                                    `asset.${index}.asset_accountable`,
+                                    `assets.${index}.asset_accountable`,
                                     newValue.accountable === "-" ? "Common" : newValue.accountable
                                   );
-                                  setValue(`asset.${index}.created_at`, newValue.created_at);
+                                  setValue(`assets.${index}.created_at`, newValue.created_at);
                                 } else {
                                   onChange(null);
-                                  setValue(`asset.${index}.asset_accountable`, "");
-                                  setValue(`asset.${index}.created_at`, null);
+                                  setValue(`assets.${index}.asset_accountable`, "");
+                                  setValue(`assets.${index}.created_at`, null);
                                 }
                               }}
                               sx={{
@@ -1173,7 +1244,7 @@ const AddTransfer = (props) => {
 
                       <TableCell>
                         <TextField
-                          {...register(`asset.${index}.asset_accountable`)}
+                          {...register(`assets.${index}.asset_accountable`)}
                           variant="outlined"
                           disabled
                           type="text"
@@ -1198,9 +1269,183 @@ const AddTransfer = (props) => {
                         />
                       </TableCell>
 
+                      <TableCell className="tbl-cell">
+                        <Stack width="250px" rowGap={0}>
+                          <TextField
+                            {...register(`assets.${index}.company_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                            }}
+                          />
+
+                          <TextField
+                            {...register(`assets.${index}.business_unit_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                            }}
+                          />
+
+                          <TextField
+                            {...register(`assets.${index}.department_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                            }}
+                          />
+
+                          <TextField
+                            {...register(`assets.${index}.unit_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                            }}
+                          />
+
+                          <TextField
+                            {...register(`assets.${index}.sub_unit_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                            }}
+                          />
+
+                          <TextField
+                            {...register(`assets.${index}.location_id`)}
+                            variant="outlined"
+                            disabled
+                            type="text"
+                            size="small"
+                            sx={{
+                              backgroundColor: "transparent",
+                              border: "none",
+                              ml: "-10px",
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  border: "none",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                backgroundColor: "transparent",
+                                fontWeight: "bold",
+                                fontSize: "11px",
+                                textOverflow: "ellipsis",
+                              },
+                              "& .Mui-disabled": {
+                                color: "red",
+                              },
+                              marginTop: "-15px",
+                              marginBottom: "-10px",
+                            }}
+                          />
+                        </Stack>
+                      </TableCell>
+
                       <TableCell>
                         <TextField
-                          {...register(`asset.${index}.created_at`)}
+                          {...register(`assets.${index}.created_at`)}
                           variant="outlined"
                           disabled
                           type="date"
@@ -1286,7 +1531,11 @@ const AddTransfer = (props) => {
                         variant="contained"
                         size="small"
                         color="secondary"
-                        onClick={() => onApprovalApproveHandler(transactionData?.transfer_number)}
+                        onClick={() =>
+                          onApprovalApproveHandler(
+                            transactionData?.id ? transactionData?.id : transactionData?.transfer_number
+                          )
+                        }
                         startIcon={<Check color="primary" />}
                       >
                         Approve
@@ -1294,7 +1543,11 @@ const AddTransfer = (props) => {
                       <Button
                         variant="contained"
                         size="small"
-                        onClick={() => onApprovalReturnHandler(transactionData?.transfer_number)}
+                        onClick={() =>
+                          onApprovalReturnHandler(
+                            transactionData?.id ? transactionData?.id : transactionData?.transfer_number
+                          )
+                        }
                         startIcon={<Undo sx={{ color: "#5f3030" }} />}
                         sx={{
                           color: "white",

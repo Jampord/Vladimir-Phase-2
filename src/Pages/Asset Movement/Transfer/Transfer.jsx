@@ -46,6 +46,7 @@ import {
   useArchiveTransferApiMutation,
   useDownloadAttachmentApiMutation,
   useGetTransferApiQuery,
+  usePatchVoidTransferApiMutation,
 } from "../../../Redux/Query/Movement/Transfer";
 import ActionMenu from "../../../Components/Reusable/ActionMenu";
 import { closeConfirm, onLoading, openConfirm } from "../../../Redux/StateManagement/confirmSlice";
@@ -125,14 +126,13 @@ const Transfer = () => {
     { refetchOnMountOrArgChange: true }
   );
 
+  console.log("transferData: ", transferData);
+
   const [downloadAttachment, { isLoading: isLoading }] = useDownloadAttachmentApiMutation();
   const [archiveTransfer, { data: archiveTransferData }] = useArchiveTransferApiMutation();
+  const [voidTransfer] = usePatchVoidTransferApiMutation();
 
   const dispatch = useDispatch();
-
-  const onSetPage = () => {
-    setPage(1);
-  };
 
   const onArchiveRestoreHandler = async (data) => {
     dispatch(
@@ -171,6 +171,68 @@ const Transfer = () => {
               dispatch(
                 openToast({
                   message: err.data.errors?.detail,
+                  duration: 5000,
+                  variant: "error",
+                })
+              );
+            } else if (err?.status !== 422) {
+              dispatch(
+                openToast({
+                  message: "Something went wrong. Please try again.",
+                  duration: 5000,
+                  variant: "error",
+                })
+              );
+            }
+          }
+        },
+      })
+    );
+  };
+
+  const onVoidHandler = async (id) => {
+    console.log("id", id);
+    dispatch(
+      openConfirm({
+        icon: Report,
+        iconColor: "warning",
+        message: (
+          <Box>
+            <Typography> Are you sure you want to</Typography>
+            <Typography
+              sx={{
+                display: "inline-block",
+                color: "secondary.main",
+                fontWeight: "bold",
+              }}
+            >
+              VOID
+            </Typography>{" "}
+            this Data?
+          </Box>
+        ),
+
+        onConfirm: async () => {
+          try {
+            dispatch(onLoading());
+            let result = await voidTransfer({
+              movement_id: id,
+            }).unwrap();
+            console.log(result);
+            dispatch(
+              openToast({
+                message: result.message,
+                duration: 5000,
+              })
+            );
+
+            dispatch(closeConfirm());
+          } catch (err) {
+            console.log(err);
+            if (err?.status === 422) {
+              dispatch(
+                openToast({
+                  message: err.data.message,
                   duration: 5000,
                   variant: "error",
                 })
@@ -272,11 +334,83 @@ const Transfer = () => {
   };
 
   const handleViewTransfer = (data) => {
+    // console.log("data: ", data);
     const view = true;
-    navigate(`add-transfer/${data.transfer_number}`, {
+    navigate(`add-transfer/${data.id}`, {
       state: { ...data, view },
     });
   };
+
+  const transactionStatus = (data) => {
+    let statusColor, hoverColor, textColor, variant;
+
+    switch (data.status) {
+      case "Waiting to be Received":
+        statusColor = "success.light";
+        hoverColor = "success.main";
+        textColor = "white";
+        variant = "filled";
+        break;
+
+      case "Claimed":
+        statusColor = "success.dark";
+        hoverColor = "success.dark";
+        variant = "filled";
+        break;
+
+      // case "Sent to ymir for PO":
+      //   statusColor = "ymir.light";
+      //   hoverColor = "ymir.main";
+      //   variant = "filled";
+      //   break;
+
+      case "Returned":
+      case "Cancelled":
+      case "Returned From Ymir":
+        statusColor = "error.light";
+        hoverColor = "error.main";
+        variant = "filled";
+        break;
+
+      default:
+        statusColor = "success.main";
+        hoverColor = "none";
+        textColor = "success.main";
+        variant = "outlined";
+    }
+
+    return (
+      <>
+        <Tooltip title={data?.current_approver} placement="top" arrow>
+          <Chip
+            placement="top"
+            onClick={() => handleViewTimeline(data)}
+            size="small"
+            variant={variant}
+            sx={{
+              ...(variant === "filled" && {
+                backgroundColor: statusColor,
+                color: "white",
+              }),
+              ...(variant === "outlined" && {
+                borderColor: statusColor,
+                color: textColor,
+              }),
+              fontSize: "11px",
+              px: 1,
+              ":hover": {
+                ...(variant === "filled" && { backgroundColor: hoverColor }),
+                ...(variant === "outlined" && { borderColor: hoverColor, color: textColor }),
+              },
+            }}
+            label={data.status}
+          />
+        </Tooltip>
+      </>
+    );
+  };
+
+  const isReturned = transferData?.data?.map((item) => item.status).includes("Returned");
 
   return (
     <Box className="mcontainer">
@@ -295,6 +429,7 @@ const Transfer = () => {
               onTransfer={onTransfer}
               setFilter={setFilter}
               filter={filter}
+              hideArchive
             />
             {/* Asset Movement */}
             <Box className="masterlist-toolbar__addBtn" sx={{ mt: 0.8 }}>
@@ -396,16 +531,16 @@ const Transfer = () => {
                         {transferSuccess &&
                           [...transferData?.data]?.sort(comparator(order, orderBy))?.map((data) => (
                             <TableRow
-                              key={data.transfer_number}
+                              key={data.id}
                               sx={{
                                 "&:last-child td, &:last-child th": {
                                   borderBottom: 0,
                                 },
                               }}
                             >
-                              <TableCell className="tbl-cell text-weight">{data.transfer_number}</TableCell>
+                              <TableCell className="tbl-cell text-weight">{data.id}</TableCell>
                               <TableCell className="tbl-cell">{data.description}</TableCell>
-                              <TableCell className="tbl-cell">{`(${data.requester?.employee_id}) - ${data.requester?.first_name} ${data.requester?.last_name}`}</TableCell>
+                              <TableCell className="tbl-cell">{`(${data.requester?.employee_id}) - ${data.requester?.firstname} ${data.requester?.lastname}`}</TableCell>
                               <TableCell className="tbl-cell tr-cen-pad45">{data.quantity}</TableCell>
                               <TableCell className="tbl-cell text-weight text-center">
                                 <Tooltip placement="top" title="View Transfer Information" arrow>
@@ -414,89 +549,27 @@ const Transfer = () => {
                                   </IconButton>
                                 </Tooltip>
                               </TableCell>
-                              <TableCell className="tbl-cell tr-cen-pad45">
-                                {data.status === "Returned" || data.status === "Cancelled" ? (
-                                  <Chip
-                                    placement="top"
-                                    onClick={() => handleViewTimeline(data)}
-                                    size="small"
-                                    variant="filled"
-                                    sx={{
-                                      backgroundColor: "error.light",
-                                      color: "white",
-                                      fontSize: "0.7rem",
-                                      px: 1,
-                                      ":hover": { backgroundColor: "error.dark" },
-                                    }}
-                                    label={`${data.status}`}
-                                  />
-                                ) : data.status === "Claimed" ? (
-                                  <Tooltip
-                                    placement="top"
-                                    title={`${data?.current_approver?.firstname} 
-                                      ${data?.current_approver?.lastname}`}
-                                    arrow
-                                  >
-                                    <Chip
-                                      onClick={() => handleViewTimeline(data)}
-                                      size="small"
-                                      variant="filled"
-                                      sx={{
-                                        borderColor: "primary.main",
-                                        color: "white",
-                                        fontSize: "0.7rem",
-                                        px: 1,
-                                        cursor: "pointer",
-                                        backgroundColor: "success.dark",
-                                        ":hover": {
-                                          backgroundColor: "success.dark",
-                                        },
-                                      }}
-                                      label={`${data.status}`}
-                                    />
-                                  </Tooltip>
-                                ) : (
-                                  <Tooltip
-                                    placement="top"
-                                    title={`${data?.current_approver?.firstname} 
-                                        ${data?.current_approver?.lastname}`}
-                                    arrow
-                                  >
-                                    <Chip
-                                      onClick={() => handleViewTimeline(data)}
-                                      size="small"
-                                      variant={data.status === "Approved" ? "filled" : "outlined"}
-                                      sx={{
-                                        borderColor: "active.dark",
-                                        color: data?.status === "Approved" ? "white" : "active.dark",
-                                        fontSize: "0.7rem",
-                                        px: 1,
-                                        cursor: "pointer",
-                                        backgroundColor: data?.status === "Approved" && "success.main",
-                                        ":hover": {
-                                          backgroundColor: data?.status === "Approved" ? "success.dark" : "red",
-                                        },
-                                      }}
-                                      label={`${data.status}`}
-                                    />
-                                  </Tooltip>
-                                )}
-                              </TableCell>
+                              <TableCell className="tbl-cell tr-cen-pad45">{transactionStatus(data)}</TableCell>
                               <TableCell className="tbl-cell" align="center">
-                                <DlAttachment transfer_number={data?.transfer_number} />
+                                <DlAttachment transfer_number={data?.id} />
                               </TableCell>
                               <TableCell className="tbl-cell tr-cen-pad45">
                                 {Moment(data.created_at).format("MMM DD, YYYY")}
                               </TableCell>
-                              <TableCell align="center">
-                                <ActionMenu
-                                  data={data}
-                                  status={data?.status}
-                                  hideArchive
-                                  editTransferData={() => handleEditRequestData()}
-                                  onArchiveRestoreHandler={onArchiveRestoreHandler}
-                                />
+                              {/* {isReturned && ( */}
+                              <TableCell align="center" className="tbl-cell">
+                                {console.log("data", data)}
+                                {data.status === "Returned" && (
+                                  <ActionMenu
+                                    data={data}
+                                    status={data?.status}
+                                    hideArchive
+                                    showVoid
+                                    onVoidHandler={onVoidHandler}
+                                  />
+                                )}
                               </TableCell>
+                              {/* )} */}
                             </TableRow>
                           ))}
                       </>

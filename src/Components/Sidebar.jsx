@@ -88,6 +88,7 @@ import {
   PlaylistRemove,
   Warehouse,
   TableRows,
+  MoveDownOutlined,
 } from "@mui/icons-material";
 import { useGetNotificationApiQuery } from "../Redux/Query/Notification";
 
@@ -501,6 +502,13 @@ const Sidebar = () => {
           icon: PlaylistRemoveRounded,
           path: "/asset-movement/disposal",
           permission: "disposal",
+          setter: closeCollapse,
+        },
+        {
+          label: "Receiving of Transfer",
+          icon: MoveDownOutlined,
+          path: "/asset-movement/transfer-receiving",
+          permission: "transfer-receiving",
           setter: closeCollapse,
         },
       ],

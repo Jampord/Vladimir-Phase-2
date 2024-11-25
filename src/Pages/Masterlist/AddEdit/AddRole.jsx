@@ -185,6 +185,7 @@ const AddRole = (props) => {
     "transfer",
     "pull-out",
     "disposal",
+    "transfer-receiving",
 
     // Approving
     "pending-request",
@@ -223,7 +224,7 @@ const AddRole = (props) => {
   const userManagement = ["user-accounts", "role-management"];
   const settings = ["approver-settings", "form-settings"];
   const assetRequisition = ["requisition", "purchase-request", "requisition-received-asset", "requisition-releasing"];
-  const assetMovement = ["transfer", "evaluation", "pull-out", "disposal"];
+  const assetMovement = ["transfer", "evaluation", "pull-out", "disposal", "transfer-receiving"];
   const approving = ["approving-request", "approving-transfer", "approving-pull-out", "approving-disposal"];
   const reports = ["pr-report"];
   const setupSettings = ["ip-setup", "token-setup"];
@@ -449,6 +450,7 @@ const AddRole = (props) => {
     const assetMovement1 = [
       { label: "Asset Transfer", value: "transfer" },
       { label: "Asset Pullout", value: "pull-out" },
+      { label: "Receiving of Transfer", value: "transfer-receiving" },
     ];
 
     const assetMovement2 = [
@@ -932,6 +934,7 @@ const AddRole = (props) => {
                                     "evaluation",
                                     "pull-out",
                                     "disposal",
+                                    "transfer-receiving",
                                   ]),
                                 ]);
                               } else {
