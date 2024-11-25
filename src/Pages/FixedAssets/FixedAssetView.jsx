@@ -127,6 +127,7 @@ const FixedAssetView = (props) => {
     voucher_date: null,
     receipt: "",
     quantity: "",
+    unit_of_measure: null,
     asset_status_id: null,
     cycle_count_status_id: null,
     movement_status_id: null,
@@ -171,6 +172,8 @@ const FixedAssetView = (props) => {
   } = useGetFixedAssetIdApiQuery(data, {
     refetchOnMountOrArgChange: true,
   });
+
+  console.log("FAData", dataApi);
 
   const [getCalcDepreApi, { data: calcDepreApi, refetch: calcDepreApiRefetch }] = useLazyGetCalcDepreApiQuery();
   const [postCalcDepreAddCostApi, { data: calcDepreAddCostApi }] = usePostCalcDepreAddCostApiMutation();
@@ -342,6 +345,7 @@ const FixedAssetView = (props) => {
       receipt,
       po_number,
       quantity,
+      unit_of_measure,
       asset_status,
       movement_status,
       cycle_count_status,
@@ -402,6 +406,7 @@ const FixedAssetView = (props) => {
       receipt,
       po_number,
       quantity: quantity,
+      unit_of_measure,
       asset_status,
       movement_status,
       cycle_count_status,
@@ -463,6 +468,7 @@ const FixedAssetView = (props) => {
       voucher_date: null,
       receipt: "",
       quantity: "",
+      unit_of_measure: null,
       asset_status_id: "",
 
       depreciation_method: null,
@@ -484,18 +490,20 @@ const FixedAssetView = (props) => {
   };
 
   const handleDepreciation = (id) => {
-    dataApi.data?.is_additional_cost === 1
-      ? postCalcDepreAddCostApi(newDate)
-      : getCalcDepreApi({ id, date: moment(new Date(currentDate)).format("YYYY-MM") });
-    // console.log(newDate);
+    getCalcDepreApi({ id, date: moment(new Date(currentDate)).format("YYYY-MM") });
+
     setViewDepre(true);
+
+    // console.log("dataApi.data", dataApi?.data.main?.id);
   };
 
   const handleTableData = (data) => {
-    navigate(`/fixed-asset/${data.vladimir_tag_number}`, {
+    navigate(`/fixed-asset/${data.vladimir_tag_number || tag_number}`, {
       // state: { ...data, status },
-      state: { ...data },
+      state: { ...data, tag_number },
     });
+
+    console.log("mapData", data);
   };
 
   useScanDetection({
@@ -613,7 +621,11 @@ const FixedAssetView = (props) => {
                     variant="contained"
                     size="small"
                     color="secondary"
-                    onClick={() => handleDepreciation(dataApi?.data.id)}
+                    onClick={() =>
+                      handleDepreciation(
+                        dataApi.data?.is_additional_cost === 1 ? dataApi?.data.main?.id : dataApi?.data.id
+                      )
+                    }
                     startIcon={
                       isSmallScreen ? null : (
                         <PriceChange
@@ -1009,7 +1021,7 @@ const FixedAssetView = (props) => {
                 <Accordion>
                   <AccordionSummary expandIcon={<ExpandMore />}>
                     <Typography color="secondary.main" sx={{ fontFamily: "Anton", fontSize: "1rem" }}>
-                      SMALL TOOLS
+                      INCLUSIONS
                     </Typography>
                   </AccordionSummary>
 
@@ -1087,6 +1099,85 @@ const FixedAssetView = (props) => {
                   </AccordionDetails>
                 </Accordion>
                 {/* )} */}
+
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMore />}>
+                    <Typography color="secondary.main" sx={{ fontFamily: "Anton", fontSize: "1rem" }}>
+                      SMALL TOOLS
+                    </Typography>
+                  </AccordionSummary>
+
+                  <Divider />
+
+                  {dataApi?.data?.small_tools?.length === 0 || !dataApi?.data?.small_tools ? (
+                    <AccordionDetails>
+                      <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="5px">
+                        <img src={NoDataFile} alt="" width="35px" />
+                        <Typography
+                          variant="p"
+                          sx={{
+                            fontFamily: "Anton, Roboto, Helvetica",
+                            color: "secondary.main",
+                            fontSize: "1.2rem",
+                          }}
+                        >
+                          No Data Found
+                        </Typography>
+                      </Stack>
+                    </AccordionDetails>
+                  ) : (
+                    <AccordionDetails className="tableCard__border">
+                      <TableContainer>
+                        <Table>
+                          <TableHead>
+                            <TableRow
+                              sx={{
+                                "& > *": {
+                                  fontWeight: "bold",
+                                  whiteSpace: "nowrap",
+                                },
+                              }}
+                            >
+                              <TableCell className="tbl-cell">
+                                <Typography fontWeight="bold" fontSize={14}>
+                                  Id
+                                </Typography>
+                              </TableCell>
+                              <TableCell className="tbl-cell">
+                                <Typography fontWeight="bold" fontSize={14}>
+                                  Item Name
+                                </Typography>
+                              </TableCell>
+                              <TableCell className="tbl-cell">
+                                <Typography fontWeight="bold" fontSize={14}>
+                                  Item Code
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          </TableHead>
+
+                          <TableBody>
+                            {dataApi?.data.small_tools?.map((item) => {
+                              return (
+                                <TableRow key={item.id}>
+                                  <TableCell className="tbl-cell">
+                                    <Typography fontSize={13}>{item.id}</Typography>
+                                  </TableCell>
+                                  <TableCell className="tbl-cell">
+                                    <Typography fontSize={13}>{item.item_name}</Typography>
+                                  </TableCell>
+                                  <TableCell className="tbl-cell">
+                                    <Typography fontSize={13}>{item.item_code}</Typography>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </AccordionDetails>
+                  )}
+                </Accordion>
 
                 {dataApi.data?.is_additional_cost === 0 ? (
                   <Accordion
@@ -1272,7 +1363,6 @@ const FixedAssetView = (props) => {
                             }}
                             onClick={() => {
                               handleTableData(dataApi?.data?.main);
-                              // console.log(dataApi?.data?.main);
                             }}
                           >
                             <TableCell width={80} align="center">
