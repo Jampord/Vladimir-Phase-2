@@ -21,6 +21,8 @@ const RequestTimeline = (props) => {
   const { data: transactionData } = props;
   const dispatch = useDispatch();
 
+  console.log("tdata", transactionData);
+
   return (
     <Box className="timelineSteps">
       <IconButton onClick={() => dispatch(closeDialog())} sx={{ position: "absolute", top: 10, right: 10 }}>
@@ -35,7 +37,7 @@ const RequestTimeline = (props) => {
       </Stack>
 
       <Typography color="secondary" fontWeight={600} fontSize={20} alignSelf="center">
-        TRANSACTION : {transactionData?.transaction_number}
+        TRANSACTION: {transactionData?.transaction_number}
       </Typography>
 
       <Stack flexDirection="row" alignItems="center" gap={1}>
@@ -80,6 +82,9 @@ const RequestTimeline = (props) => {
               >
                 <Typography fontSize={10} marginTop="-10px" fontWeight={600} textTransform="uppercase" minWidth={80}>
                   {label}
+                  {/* {console.log("label", index)} */}
+
+                  {/* {Moment(transactionData.history[0].created_at).startOf("day").fromNow()} */}
                 </Typography>
               </StepLabel>
             </Step>
@@ -90,7 +95,7 @@ const RequestTimeline = (props) => {
       <Divider width="100%" sx={{ mb: 1.5, width: "90%", alignSelf: "center" }} />
 
       <Stack sx={{ mt: -1.5 }} width="100%">
-        <Stack flexDirection="row" alignItems="center" justifyContent="center" gap={1} mb={2} mt={1}>
+        <Stack flexDirection="column" alignItems="center" justifyContent="center" gap={1} mb={2} mt={1}>
           {/* <History color='secondary.main' /> */}
           <Typography fontFamily={"Anton, Impact"} color={"secondary"} fontSize={20}>
             HISTORY
@@ -146,6 +151,9 @@ const RequestTimeline = (props) => {
                       </Typography>
                       <Typography fontSize="12px" color="gray" marginTop="-2px">
                         {Moment(item?.created_at).format("LT")}
+                      </Typography>
+                      <Typography fontSize="12px" color="gray" marginTop="-2px">
+                        {item?.aging.split(/(\s+)/)[0] <= 1 ? item?.aging.replace("s", "") : item?.aging}
                       </Typography>
                     </Stack>
 
