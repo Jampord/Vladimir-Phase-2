@@ -1331,7 +1331,7 @@ const AddFa = (props) => {
                 type="number"
                 color="secondary"
                 size="small"
-                disabled
+                // disabled
                 error={!!errors?.quantity}
                 helperText={errors?.quantity?.message}
                 fullWidth={isFullWidth ? true : false}
