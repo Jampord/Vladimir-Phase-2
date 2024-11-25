@@ -74,7 +74,7 @@ const ViewRequestReleasing = (props) => {
     }
   );
 
-  // console.log(releasingData);
+  console.log("releasingdata", [releasingData]);
 
   const handleReleasing = () => {
     dispatch(openDialog());
@@ -84,6 +84,9 @@ const ViewRequestReleasing = (props) => {
     setViewImage(data);
     dispatch(openDialog1());
   };
+
+  const commonData = data?.accountability === "Common";
+  const personalData = data?.accountability !== "Common";
 
   return (
     <>
@@ -840,7 +843,14 @@ const ViewRequestReleasing = (props) => {
           },
         }}
       >
-        <AddReleasingInfo data={releasingData} hideWN refetch={releasingDataRefetch} />
+        <AddReleasingInfo
+          data={[releasingData]}
+          warehouseNumber={{ warehouse_number_id: [data?.warehouse_number?.warehouse_number] }}
+          commonData={commonData}
+          personalData={personalData}
+          // hideWN
+          // refetch={releasingDataRefetch}
+        />
       </Dialog>
 
       <Dialog
@@ -857,7 +867,11 @@ const ViewRequestReleasing = (props) => {
           },
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }} className="imageContainer">
+        <Box
+          width="650px"
+          sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+          className="imageContainer"
+        >
           {viewImage?.viewing !== "data:image/png;base64," ? (
             <img src={viewImage?.viewing} alt={viewImage?.file_name} />
           ) : (
