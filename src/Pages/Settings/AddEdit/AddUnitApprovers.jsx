@@ -227,7 +227,11 @@ const AddUnitApprovers = (props) => {
           alignSelf: "center",
         }}
       >
-        {data.action === "view" ? "View Approvers" : data.action === "update" ? "Update Approvers" : "Assign Approvers"}
+        {data?.action === "view"
+          ? "View Approvers"
+          : data?.action === "update"
+          ? "Update Approvers"
+          : "Assign Approvers"}
       </Typography>
 
       <Box component="form" onSubmit={handleSubmit(onSubmitHandler)} className="add-masterlist__content" gap={1.5}>
@@ -240,7 +244,7 @@ const AddUnitApprovers = (props) => {
           options={unitData}
           loading={isUnitLoading}
           size="small"
-          disabled={data.action === "view" || "update"}
+          disabled={data?.action === "view" || data?.action === "update"}
           getOptionLabel={(option) => `${option.unit_code} - ${option.unit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
@@ -266,7 +270,7 @@ const AddUnitApprovers = (props) => {
           options={subUnitData?.filter((item) => item?.unit?.id === watch("unit_id")?.id)}
           loading={isSubUnitLoading}
           size="small"
-          disabled={data.action === "view" || "update"}
+          disabled={data?.action === "view" || data?.action === "update"}
           getOptionLabel={(option) => `${option.subunit_code} - ${option.subunit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
@@ -291,7 +295,7 @@ const AddUnitApprovers = (props) => {
             <Autocomplete
               value={selectedApprovers}
               loading={isApproverLoading}
-              disabled={data.action === "view"}
+              disabled={data?.action === "view"}
               size="small"
               fullWidth
               filterOptions={filterOptions}
@@ -365,10 +369,10 @@ const AddUnitApprovers = (props) => {
               overflow="overlay"
               pr="3px"
               mr="-3px"
-              sx={{ cursor: data.action === "view" ? "" : "pointer" }}
+              sx={{ cursor: data?.action === "view" ? "" : "pointer" }}
             >
               <ReactSortable
-                disabled={data.action === "view"}
+                disabled={data?.action === "view"}
                 group="groupName"
                 animation={200}
                 delayOnTouchStart={true}
@@ -402,7 +406,7 @@ const AddUnitApprovers = (props) => {
                             sx={{
                               width: 24,
                               height: 24,
-                              backgroundColor: data.action === "view" ? "gray" : "primary.main",
+                              backgroundColor: data?.action === "view" ? "gray" : "primary.main",
                               fontSize: "16px",
                             }}
                           >
@@ -419,7 +423,7 @@ const AddUnitApprovers = (props) => {
                           <span>
                             <IconButton
                               aria-label="Delete"
-                              disabled={data.action === "view"}
+                              disabled={data?.action === "view"}
                               onClick={() => {
                                 deleteApproverHandler(approver?.id);
                               }}
@@ -440,7 +444,7 @@ const AddUnitApprovers = (props) => {
         <Divider />
 
         <Box className="add-masterlist__buttons">
-          {data.action === "view" ? (
+          {data?.action === "view" ? (
             ""
           ) : (
             <LoadingButton type="submit" variant="contained" size="small" loading={isPostLoading || isUpdateLoading}>
@@ -455,7 +459,7 @@ const AddUnitApprovers = (props) => {
             onClick={handleCloseDrawer}
             disabled={isPostLoading || isUpdateLoading}
           >
-            {data.action === "view" ? "Close" : "Cancel"}
+            {data?.action === "view" ? "Close" : "Cancel"}
           </Button>
         </Box>
       </Box>

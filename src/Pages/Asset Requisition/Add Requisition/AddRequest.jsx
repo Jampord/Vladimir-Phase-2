@@ -128,7 +128,9 @@ const schema = yup.object().shape({
     .object()
     .nullable()
     .when("type_of_request", {
-      is: (value) => value === "Small Tools",
+      is: (value) => {
+        value === "Small Tools";
+      },
       then: (yup) => yup.label("Small Tools").required().typeError("Small Tools is a required field"),
     }),
   // account_title_id: yup.object().required().label("Account Title").typeError("Account Title is a required field"),
@@ -217,7 +219,7 @@ const AddRequisition = (props) => {
   const [transactionStatusId, setTransactionStatusId] = useState(null);
 
   const { state: transactionData } = useLocation();
-  // console.log("trans data", transactionData);
+  console.log("trans data: ", transactionData);
   const dialog = useSelector((state) => state.booleanState.dialog);
 
   const isFullWidth = useMediaQuery("(max-width: 600px)");
@@ -301,6 +303,8 @@ const AddRequisition = (props) => {
       isError: isMinorCategoryError,
     },
   ] = useLazyGetMinorCategoryAllApiQuery();
+
+  const [tag, setTag] = useState(0);
 
   const [
     warehouseTrigger,
@@ -520,10 +524,9 @@ const AddRequisition = (props) => {
     isRequisitionRefetch();
   }, [transactionData]);
 
-  console.log("update request", updateRequest);
-
   useEffect(() => {
     if (updateRequest.id) {
+      console.log("updaterequest", updateRequest);
       const accountable = {
         general_info: {
           full_id_number: updateRequest.accountable.split(" ")[0],
@@ -532,9 +535,9 @@ const AddRequisition = (props) => {
       };
       const dateNeededFormat = updateRequest?.date_needed === "-" ? null : new Date(updateRequest?.date_needed);
       const smallToolFormat = updateRequest?.small_tool_id === undefined ? null : updateRequest?.small_tool_id;
-      console.log("smalltoolformat", updateRequest);
       const cellphoneNumber = updateRequest?.cellphone_number === "-" ? "" : updateRequest?.cellphone_number.slice(2);
       const attachmentFormat = (fields) => (updateRequest?.[fields] === "-" ? "" : updateRequest?.[fields]);
+
       setValue("type_of_request_id", updateRequest?.type_of_request);
       setValue("cip_number", updateRequest?.cip_number);
       setValue("attachment_type", updateRequest?.attachment_type);
@@ -587,6 +590,8 @@ const AddRequisition = (props) => {
   };
 
   const attachmentValidation = (fieldName, formData) => {
+    // console.log("fieldName", fieldName);
+    // console.log("formData", formData);
     const validateAdd = addRequestAllApi.find((item) => item.id === updateRequest.id);
     const validate = transactionDataApi.find((item) => item.id === updateRequest.id);
 
@@ -1187,6 +1192,7 @@ const AddRequisition = (props) => {
       subunit,
       location,
       small_tool_id: small_tool,
+      // small_tool_id: small_tool.id,
       // account_title,
       accountability,
       accountable,
@@ -1366,12 +1372,13 @@ const AddRequisition = (props) => {
                 control={control}
                 name="receiving_warehouse_id"
                 options={warehouseData}
-                onOpen={() => (isWarehouseSuccess ? null : warehouseTrigger())}
+                onOpen={() => (isWarehouseSuccess ? null : warehouseTrigger(0))}
                 onBlur={() => handleInputValidation("receiving_warehouse_id", "warehouse?.id", "warehouse")}
                 loading={isWarehouseLoading}
                 // disabled={transactionData ? transactionData?.length !== 0 : addRequestAllApi?.length !== 0}
                 disabled={updateRequest && disable}
                 getOptionLabel={(option) => option.warehouse_name}
+                getOptionKey={(option) => option.warehouse_code}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
                 renderInput={(params) => (
                   <TextField
@@ -2233,6 +2240,7 @@ const AddRequisition = (props) => {
 
                             <TableCell onClick={() => handleShowItems(data)} className="tbl-cell">
                               <Typography fontWeight={600}>{data.type_of_request?.type_of_request_name}</Typography>
+
                               <Typography
                                 fontWeight={400}
                                 fontSize={12}

@@ -518,10 +518,10 @@ const AssignmentMemoReprint = (props) => {
           </TableContainer>
 
           <CustomTablePagination
-            total={assignedData?.data?.total}
+            total={assignedData?.total}
             success={assignedSuccess}
-            current_page={assignedData?.data?.current_page}
-            per_page={assignedData?.data?.per_page}
+            current_page={assignedData?.current_page}
+            per_page={assignedData?.per_page}
             onPageChange={pageHandler}
             onRowsPerPageChange={perPageHandler}
             removeShadow
