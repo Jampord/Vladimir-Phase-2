@@ -8,6 +8,7 @@ import { usePostAddCostTaggingApiMutation } from "../../../Redux/Query/FixedAsse
 import { openToast } from "../../../Redux/StateManagement/toastSlice";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
+import { usePutElixirAssetTagMutation } from "../../../Redux/Query/Systems/Elixir";
 
 const schema = yup.object().shape({
   added_useful_life: yup
@@ -24,6 +25,11 @@ const AddTag = ({ data, tag, handleCancel }) => {
     { data: postData, isLoading: isPostLoading, isSuccess: isPostSuccess, isError: isPostError, error: postError },
   ] = usePostAddCostTaggingApiMutation();
 
+  const [
+    putElixirAssetTag,
+    { isLoading: isPutLoading, isSuccess: isPutSuccess, isError: isPutError, error: putError },
+  ] = usePutElixirAssetTagMutation();
+
   const {
     control,
     handleSubmit,
@@ -34,6 +40,14 @@ const AddTag = ({ data, tag, handleCancel }) => {
     resolver: yupResolver(schema),
     defaultValues: { added_useful_life: "" },
   });
+
+  const assetTagId = data
+    ?.filter((item) => tag?.tag_id?.includes(item?.id))
+    .map((item) => {
+      return { id: item.id };
+    });
+
+  console.log("assetTagID", assetTagId);
 
   const assetTag =
     data
@@ -91,12 +105,12 @@ const AddTag = ({ data, tag, handleCancel }) => {
   const onSubmitHandler = async (formData) => {
     const body = { assetTag, ...formData };
 
-    console.log("body", body);
-    console.log("data", data);
+    // console.log("body", body);
+    // console.log("data", data);
     console.log("formdata", formData);
 
     try {
-      const res = await postAddCostTag(body).unwrap();
+      await postAddCostTag(body).unwrap();
       reset();
     } catch (error) {
       console.log(error);
@@ -118,6 +132,7 @@ const AddTag = ({ data, tag, handleCancel }) => {
           duration: 5000,
         })
       );
+      putElixirAssetTag(assetTagId);
       handleCancel();
     }
   }, [isPostSuccess]);
