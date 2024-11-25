@@ -35,7 +35,7 @@ export const transferApprovalApi = createApi({
 
     patchTransferApprovalStatusApi: builder.mutation({
       query: (body) => ({
-        url: `/transfer-approval`,
+        url: `/handle-movement`,
         method: "PATCH",
         body,
       }),
