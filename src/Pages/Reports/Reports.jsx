@@ -3,17 +3,17 @@ import "../../Style/parentSidebar.scss";
 
 import { Outlet } from "react-router";
 import { useLocation } from "react-router-dom";
-
+import AssessmentIcon from "@mui/icons-material/Assessment";
 import { Box, Typography, useMediaQuery } from "@mui/material";
 import { PlaylistRemoveRounded, RemoveFromQueue, RuleFolder, TransferWithinAStation } from "@mui/icons-material";
 import Cards from "../../Components/Reusable/Cards";
 
 const ReportList = [
   {
-    icon: <TransferWithinAStation />,
-    label: "Transfer",
-    description: "Requesting for Asset Transfer",
-    path: "/reports/purchase-request-report",
+    icon: <AssessmentIcon />,
+    label: "PR Reports",
+    description: "List of  PR Reports",
+    path: "/reports/pr-report",
   },
 
   //   {
@@ -45,7 +45,7 @@ const Reports = () => {
 
   return (
     <>
-      {location.pathname === "/asset-movement" ? (
+      {location.pathname === "/reports" ? (
         <>
           <Typography
             color="secondary"
@@ -56,7 +56,7 @@ const Reports = () => {
               marginLeft: isSmallScreen ? null : "30px",
             }}
           >
-            Asset Movement
+            Reports
           </Typography>
           <Box className="parentSidebar">
             <Box className="parentSidebar__container">

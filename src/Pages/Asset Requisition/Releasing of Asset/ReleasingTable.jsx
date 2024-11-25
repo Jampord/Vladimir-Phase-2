@@ -179,6 +179,9 @@ const ReleasingTable = (props) => {
   };
   // * -------------------------------------------------------------------
 
+  console.log("releasingData", releasingData?.data);
+  // console.log("wnumber", wNumber);
+
   return (
     <Stack sx={{ height: "calc(100vh - 250px)" }}>
       {releasingLoading && <MasterlistSkeleton onAdd={true} category />}
@@ -213,7 +216,7 @@ const ReleasingTable = (props) => {
                       }}
                     >
                       {!released && (
-                        <TableCell align="center">
+                        <TableCell align="center" className="tbl-cell">
                           <FormControlLabel
                             sx={{ margin: "auto", align: "center" }}
                             control={
@@ -351,7 +354,7 @@ const ReleasingTable = (props) => {
                                 </Typography> */}
                               </TableCell>
 
-                              <TableCell>
+                              <TableCell onClick={() => handleViewData(data)} className="tbl-cell">
                                 <Typography fontSize={14} fontWeight={600} color="secondary.main">
                                   {data.vladimir_tag_number}
                                 </Typography>

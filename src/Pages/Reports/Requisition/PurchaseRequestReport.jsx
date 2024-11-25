@@ -439,7 +439,7 @@ const PurchaseRequestReport = (props) => {
         <Stack gap={2}>
           <Stack flexDirection="row" justifyContent="space-between">
             <Typography fontSize={24} fontFamily="Anton" color="secondary">
-              {prItems?.ymir_pr_number}
+              PR No. {prItems?.ymir_pr_number}
             </Typography>
 
             {!isSmallScreen && (
