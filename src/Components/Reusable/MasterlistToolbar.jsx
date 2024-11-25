@@ -60,6 +60,7 @@ import {
   FilterAlt,
   FilterList,
   LibraryAdd,
+  LocalOffer,
   MoreVert,
   PostAdd,
   Print,
@@ -105,6 +106,7 @@ const MasterlistToolbar = (props) => {
     dateTo,
     setDateTo,
     showDateFilter,
+    onTag,
   } = props;
 
   const [searchValue, setSearchValue] = useState("");
@@ -446,6 +448,20 @@ const MasterlistToolbar = (props) => {
               sx={isSmallScreen ? { minWidth: "50px", px: 0 } : null}
             >
               {isSmallScreen ? <LibraryAdd color="black" sx={{ fontSize: "20px" }} /> : "Add"}
+            </Button>
+          )}
+
+          {onTag && (
+            <Button
+              component={Link}
+              to={path}
+              onClick={handleOpenDrawer || handleOpenDialog}
+              variant="contained"
+              startIcon={isSmallScreen ? null : <LocalOffer />}
+              size="small"
+              sx={isSmallScreen ? { minWidth: "50px", px: 0 } : null}
+            >
+              {isSmallScreen ? <LocalOffer color="black" sx={{ fontSize: "20px" }} /> : "Add"}
             </Button>
           )}
 
