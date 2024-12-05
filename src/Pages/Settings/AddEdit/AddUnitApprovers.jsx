@@ -419,19 +419,21 @@ const AddUnitApprovers = (props) => {
                             </Typography>
                           </Stack>
                         </Stack>
-                        <Tooltip title="Remove" TransitionComponent={Zoom} arrow>
-                          <span>
-                            <IconButton
-                              aria-label="Delete"
-                              disabled={data?.action === "view"}
-                              onClick={() => {
-                                deleteApproverHandler(approver?.id);
-                              }}
-                            >
-                              <Close sx={{ fontSize: "18px" }} />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
+                        {(!data.action === "view" || data.action === "update" || data.status === false) && (
+                          <Tooltip title="Remove" TransitionComponent={Zoom} arrow>
+                            <span>
+                              <IconButton
+                                aria-label="Delete"
+                                disabled={data?.action === "view"}
+                                onClick={() => {
+                                  deleteApproverHandler(approver?.id);
+                                }}
+                              >
+                                <Close sx={{ fontSize: "18px" }} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
                       </Stack>
                     </Slide>
                   </Stack>

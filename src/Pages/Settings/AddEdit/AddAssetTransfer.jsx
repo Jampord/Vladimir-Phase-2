@@ -240,7 +240,7 @@ const AddAssetTransfer = (props) => {
           options={unitData}
           loading={isUnitLoading}
           size="small"
-          disabled={data.action === "view"}
+          disabled={data.action === "view" || data.action === "update"}
           getOptionLabel={(option) => `${option.unit_code} - ${option.unit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
@@ -266,7 +266,7 @@ const AddAssetTransfer = (props) => {
           options={subUnitData?.filter((item) => item?.unit?.id === watch("unit_id")?.id)}
           loading={isSubUnitLoading}
           size="small"
-          disabled={data.action === "view"}
+          disabled={data.action === "view" || data.action === "update"}
           getOptionLabel={(option) => `${option.subunit_code} - ${option.subunit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
@@ -409,19 +409,21 @@ const AddAssetTransfer = (props) => {
                             </Typography>
                           </Stack>
                         </Stack>
-                        <Tooltip title="Remove" TransitionComponent={Zoom} arrow>
-                          <span>
-                            <IconButton
-                              aria-label="Delete"
-                              disabled={data.action === "view"}
-                              onClick={() => {
-                                deleteApproverHandler(approver?.id);
-                              }}
-                            >
-                              <Close sx={{ fontSize: "18px" }} />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
+                        {(!data.action === "view" || data.action === "update" || data.status === false) && (
+                          <Tooltip title="Remove" TransitionComponent={Zoom} arrow>
+                            <span>
+                              <IconButton
+                                aria-label="Delete"
+                                disabled={data.action === "view"}
+                                onClick={() => {
+                                  deleteApproverHandler(approver?.id);
+                                }}
+                              >
+                                <Close sx={{ fontSize: "18px" }} />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        )}
                       </Stack>
                     </Slide>
                   </Stack>

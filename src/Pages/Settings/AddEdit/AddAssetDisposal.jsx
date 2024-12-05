@@ -239,7 +239,7 @@ const AddAssetDisposal = (props) => {
           options={unitData}
           loading={isUnitLoading}
           size="small"
-          disabled={data.action === "view"}
+          disabled={data.action === "view" || data.action === "update"}
           getOptionLabel={(option) => `${option.unit_code} - ${option.unit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
@@ -265,7 +265,7 @@ const AddAssetDisposal = (props) => {
           options={subUnitData?.filter((item) => item?.unit?.id === watch("unit_id")?.id)}
           loading={isSubUnitLoading}
           size="small"
-          disabled={data.action === "view"}
+          disabled={data.action === "view" || data.action === "update"}
           getOptionLabel={(option) => `${option.subunit_code} - ${option.subunit_name}`}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           renderInput={(params) => (
