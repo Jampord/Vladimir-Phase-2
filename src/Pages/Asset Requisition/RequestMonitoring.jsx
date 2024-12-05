@@ -46,6 +46,7 @@ import RequestTimeline from "./RequestTimeline";
 import useExcel from "../../Hooks/Xlsx";
 import moment from "moment";
 import ExportRequestMonitoring from "./ExportRequestMonitoring";
+import { LoadingData } from "../../Components/LottieFiles/LottieComponents";
 
 const RequestMonitoring = () => {
   const [search, setSearch] = useState("");
@@ -55,6 +56,7 @@ const RequestMonitoring = () => {
   const [requestFilter, setRequestFilter] = useState([]);
   const [transactionIdData, setTransactionIdData] = useState();
   const viewData = true;
+  const requestMonitoring = true;
 
   const dispatch = useDispatch();
 
@@ -111,6 +113,7 @@ const RequestMonitoring = () => {
     isLoading: requisitionLoading,
     isSuccess: requisitionSuccess,
     isError: requisitionError,
+    isFetching: requisitionFetching,
     error: errorData,
     refetch,
   } = useGetRequisitionMonitoringApiQuery(
@@ -215,10 +218,10 @@ const RequestMonitoring = () => {
   const handleEditRequisition = (data) => {
     data?.is_addcost === 1
       ? navigate(`/request-monitoring/${data.transaction_number}`, {
-          state: { ...data, viewData },
+          state: { ...data, viewData, requestMonitoring },
         })
       : navigate(`/request-monitoring/${data.transaction_number}`, {
-          state: { ...data, viewData },
+          state: { ...data, viewData, requestMonitoring },
         });
   };
 
@@ -409,7 +412,10 @@ const RequestMonitoring = () => {
                       <NoRecordsFound heightData="medium" />
                     ) : (
                       <>
-                        {requisitionSuccess &&
+                        {requisitionFetching ? (
+                          <LoadingData />
+                        ) : (
+                          requisitionSuccess &&
                           [...requisitionData?.data]?.sort(comparator(order, orderBy))?.map((data) => (
                             <TableRow
                               key={data.id}
@@ -456,7 +462,8 @@ const RequestMonitoring = () => {
                                   : Moment(data.created_at).format("MMM DD, YYYY")}
                               </TableCell>
                             </TableRow>
-                          ))}
+                          ))
+                        )}
                       </>
                     )}
                   </TableBody>

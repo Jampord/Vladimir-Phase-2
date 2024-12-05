@@ -2142,7 +2142,11 @@ const AddRequisition = (props) => {
           <Box className="request request__wrapper" p={2}>
             {/* FORM */}
             {/* {transactionData ? (transactionData?.process_count === 1 ? formInputs() : null) : formInputs()} */}
-            {!transactionData ? formInputs() : transactionData?.can_edit === 1 && formInputs()}
+            {!transactionData
+              ? formInputs()
+              : transactionData?.requestMonitoring
+              ? null
+              : transactionData?.can_edit === 1 && formInputs()}
 
             {/* TABLE */}
             <Box className="request__table">
@@ -2203,9 +2207,11 @@ const AddRequisition = (props) => {
                       <TableCell className="tbl-cell">Cellphone #</TableCell>
                       <TableCell className="tbl-cell">Additional Info.</TableCell>
                       <TableCell className="tbl-cell">Attachments</TableCell>
-                      {(transactionData?.can_edit === 1 || !transactionData) && (
-                        <TableCell className="tbl-cell">Action</TableCell>
-                      )}
+                      {transactionData?.requestMonitoring
+                        ? null
+                        : (transactionData?.can_edit === 1 || !transactionData) && (
+                            <TableCell className="tbl-cell">Action</TableCell>
+                          )}
                     </TableRow>
                   </TableHead>
 
@@ -2438,46 +2444,49 @@ const AddRequisition = (props) => {
                               )}
                             </TableCell>
 
-                            {data?.can_edit === 1 && data?.is_removed === 0 && (
-                              <TableCell className="tbl-cell">
-                                <ActionMenu
-                                  // DATA
-                                  data={data}
-                                  index={index}
-                                  status={data?.status}
-                                  hideArchive
-                                  addRequestAllApi
-                                  transactionData={transactionData ? true : false}
-                                  // EDIT request
-                                  editRequestData={() => handleEditRequestData()}
-                                  editRequest={editRequest}
-                                  setEditRequest={setEditRequest}
-                                  setDisable={setDisable}
-                                  onUpdateHandler={onUpdateHandler}
-                                  onUpdateResetHandler={onUpdateResetHandler}
-                                  setUpdateToggle={setUpdateToggle}
-                                  setSelectedId={setSelectedId}
-                                  //DELETE request
-                                  onDeleteHandler={
-                                    (transactionData && addRequestAllApi?.length === 0) ||
-                                    addRequestAllApi?.length === 1
-                                      ? false
-                                      : onDeleteHandler
-                                  }
-                                  disableDelete={
-                                    transactionDataApi?.length === 1 && data.status !== "For Approval of Approver 1"
-                                      ? true
-                                      : false
-                                  }
-                                  onDeleteReferenceHandler={
-                                    transactionData &&
-                                    transactionData?.item_count !== 1 &&
-                                    transactionDataApi.length !== 1 &&
-                                    onDeleteReferenceHandler
-                                  }
-                                />
-                              </TableCell>
-                            )}
+                            {transactionData?.requestMonitoring
+                              ? null
+                              : data?.can_edit === 1 &&
+                                data?.is_removed === 0 && (
+                                  <TableCell className="tbl-cell">
+                                    <ActionMenu
+                                      // DATA
+                                      data={data}
+                                      index={index}
+                                      status={data?.status}
+                                      hideArchive
+                                      addRequestAllApi
+                                      transactionData={transactionData ? true : false}
+                                      // EDIT request
+                                      editRequestData={() => handleEditRequestData()}
+                                      editRequest={editRequest}
+                                      setEditRequest={setEditRequest}
+                                      setDisable={setDisable}
+                                      onUpdateHandler={onUpdateHandler}
+                                      onUpdateResetHandler={onUpdateResetHandler}
+                                      setUpdateToggle={setUpdateToggle}
+                                      setSelectedId={setSelectedId}
+                                      //DELETE request
+                                      onDeleteHandler={
+                                        (transactionData && addRequestAllApi?.length === 0) ||
+                                        addRequestAllApi?.length === 1
+                                          ? false
+                                          : onDeleteHandler
+                                      }
+                                      disableDelete={
+                                        transactionDataApi?.length === 1 && data.status !== "For Approval of Approver 1"
+                                          ? true
+                                          : false
+                                      }
+                                      onDeleteReferenceHandler={
+                                        transactionData &&
+                                        transactionData?.item_count !== 1 &&
+                                        transactionDataApi.length !== 1 &&
+                                        onDeleteReferenceHandler
+                                      }
+                                    />
+                                  </TableCell>
+                                )}
                           </TableRow>
                         ))}
                       </>
