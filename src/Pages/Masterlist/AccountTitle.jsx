@@ -330,7 +330,7 @@ const AccountTitle = () => {
                         </TableSortLabel>
                       </TableCell>
 
-                      <TableCell className="tbl-cell text-center">Action</TableCell>
+                      {/* <TableCell className="tbl-cell text-center">Action</TableCell> */}
                     </TableRow>
                   </TableHead>
 
@@ -388,14 +388,14 @@ const AccountTitle = () => {
                                 {Moment(data.updated_at).format("MMM DD, YYYY")}
                               </TableCell>
 
-                              <TableCell className="tbl-cell text-center">
+                              {/* <TableCell className="tbl-cell text-center">
                                 <ActionMenu
                                   hideEdit={true}
                                   data={data}
                                   status={status}
                                   onArchiveRestoreHandler={onArchiveRestoreHandler}
                                 />
-                              </TableCell>
+                              </TableCell> */}
                             </TableRow>
                           ))}
                       </>

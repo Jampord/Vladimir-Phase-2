@@ -309,7 +309,7 @@ const UnitOfMeasurement = () => {
                       </TableSortLabel>
                     </TableCell>
 
-                    <TableCell className="tbl-cell">Action</TableCell>
+                    {/* <TableCell className="tbl-cell">Action</TableCell> */}
                   </TableRow>
                 </TableHead>
 
@@ -342,14 +342,14 @@ const UnitOfMeasurement = () => {
                               {Moment(data.created_at).format("MMM DD, YYYY")}
                             </TableCell>
 
-                            <TableCell className="tbl-cell ">
+                            {/* <TableCell className="tbl-cell ">
                               <ActionMenu
                                 status={status}
                                 data={data}
                                 // onUpdateHandler={onUpdateHandler}
                                 // onArchiveRestoreHandler={onArchiveRestoreHandler}
                               />
-                            </TableCell>
+                            </TableCell> */}
                           </TableRow>
                         ))}
                     </>
