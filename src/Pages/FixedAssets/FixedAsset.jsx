@@ -69,6 +69,7 @@ import useScanDetection from "use-scan-detection-react18";
 import CustomTablePagination from "../../Components/Reusable/CustomTablePagination";
 import AssignmentMemoReprint from "./AssignmentMemoReprint";
 import AddFA from "./AddEdit/AddFA";
+import { LoadingData } from "../../Components/LottieFiles/LottieComponents";
 
 const FixedAsset = (props) => {
   const navigate = useNavigate();
@@ -185,6 +186,7 @@ const FixedAsset = (props) => {
     isLoading: fixedAssetLoading,
     isSuccess: fixedAssetSuccess,
     isError: fixedAssetError,
+    isFetching: fixedAssetFetching,
     error: errorData,
     refetch: fixedAssetRefetch,
   } = useGetFixedAssetApiQuery(
@@ -393,7 +395,10 @@ const FixedAsset = (props) => {
                     <NoRecordsFound heightData="medium" />
                   ) : (
                     <>
-                      {fixedAssetSuccess &&
+                      {fixedAssetFetching ? (
+                        <LoadingData />
+                      ) : (
+                        fixedAssetSuccess &&
                         [...fixedAssetData.data].sort(comparator(order, orderBy))?.map((data, index) => {
                           return (
                             <TableRow
@@ -524,7 +529,8 @@ const FixedAsset = (props) => {
                               </TableCell>
                             </TableRow>
                           );
-                        })}
+                        })
+                      )}
                     </>
                   )}
                 </TableBody>
